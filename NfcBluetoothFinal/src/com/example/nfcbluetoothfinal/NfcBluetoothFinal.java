@@ -1,7 +1,9 @@
 package com.example.nfcbluetoothfinal;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,13 +13,19 @@ import android.view.Menu;
 import android.widget.Toast;
 
 import com.example.nfcbluetoothfinal.BluetoothModule.BluetoothState;
+import com.example.nfcbluetoothfinal.util.BluetoothBroadcastReceiver;
 import com.example.nfcbluetoothfinal.util.Messages;
-import com.example.nfcbluetoothfinal.util.P2PCommException;
 
 public class NfcBluetoothFinal extends Activity {
 	private static final String TAG = "NfcBluetoothFinal";
 	
-	private P2PCommHandler commHandler = null;
+	private BluetoothAdapter bluetoothAdapter = null;
+	private NfcAdapter nfcAdapter = null;
+	private BluetoothBroadcastReceiver broadcastReceiver = null;
+	private boolean broadcastReceiverRegistered = false;
+	
+	private BluetoothModule bluetoothModule = null;
+	private NfcModule nfcModule = null;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -26,11 +34,16 @@ public class NfcBluetoothFinal extends Activity {
 		
 		Log.e(TAG, "+++ ON CREATE +++");
 		
-		try {
-			commHandler = new P2PCommHandler(this);
-		} catch (P2PCommException e) {
-			Log.e(TAG, e.getMessage());
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		if (bluetoothAdapter == null) {
+			Toast.makeText(this, Messages.ERROR_NO_BLUETOOTH, Toast.LENGTH_LONG).show();
+			finish();
+			return;
+		}
+		
+		nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		if (nfcAdapter == null) {
+			Toast.makeText(this, Messages.ERROR_NO_BLUETOOTH, Toast.LENGTH_LONG).show();
 			finish();
 			return;
 		}
@@ -41,30 +54,39 @@ public class NfcBluetoothFinal extends Activity {
 		super.onStart();
 		Log.e(TAG, "++ ON START ++");
 		
-		if (commHandler == null) {
-			Log.e(TAG, "commhandler is null and needs to be re-instanciated");
-			setupCommHandler();
-		}
-		
-		if (!commHandler.nfcEnabled()) {
+		if (!nfcAdapter.isEnabled()) {
+			//prompt dialog to enable nfc
 			Toast.makeText(this, Messages.ACTIVATE_NFC, Toast.LENGTH_LONG).show();
-	        startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
-		} else if (!commHandler.bluetoothEnabled()) {
-			commHandler.registerBroadcastReceiver(this, handler);
-			commHandler.enableBluetooth();
+			startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+		} else if (!bluetoothAdapter.isEnabled()) {
+			//enable bluetooth programatically
+			registerBroadcastReceiver(handler);
+			bluetoothAdapter.enable();
 		} else {
-			setupCommHandler();
-			commHandler.init(this, handler);
+			initBluetooth();
+			initNfc();
 		}
 	}
-
-	private void setupCommHandler() {
-		try  {
-			commHandler = new P2PCommHandler(this);
-			commHandler.registerBroadcastReceiver(this, handler);
-		} catch (P2PCommException e) {
-			//not thrown here, would be catched in onCreate()
+	
+	private void registerBroadcastReceiver(Handler handler) {
+		if (!broadcastReceiverRegistered) {
+			IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+			broadcastReceiver = new BluetoothBroadcastReceiver(handler);
+			this.registerReceiver(broadcastReceiver, filter);
 		}
+    }
+	
+	private void unregisterBroadcastReceiver() {
+		if (broadcastReceiverRegistered) {
+			this.unregisterReceiver(broadcastReceiver);
+		}
+	}	
+	private void initBluetooth() {
+		bluetoothModule = new BluetoothModule(bluetoothAdapter, handler);
+	}
+	
+	private void initNfc() {
+		nfcModule = new NfcModule(this, nfcAdapter, handler);
 	}
 	
 	@Override
@@ -73,17 +95,17 @@ public class NfcBluetoothFinal extends Activity {
 		Log.e(TAG, "+ ON RESUME +");
 		
 		if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-			if (commHandler != null)
-				commHandler.processNfcIntent(getIntent());
+			if (nfcModule != null)
+				nfcModule.processNfcIntent(getIntent());
 		}
 		
 		start();
 	}
-
+	
 	private void start() {
-		if (commHandler != null) {
-			if (commHandler.getSate() == BluetoothState.STATE_NONE) {
-				commHandler.start();
+		if (bluetoothModule != null) {
+			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
+				bluetoothModule.start();
 			}
 		}
 	}
@@ -95,25 +117,37 @@ public class NfcBluetoothFinal extends Activity {
 	}
 	
 	@Override
-    public synchronized void onPause() {
-        super.onPause();
-        Log.e(TAG, "- ON PAUSE -");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.e(TAG, "-- ON STOP --");
-    }
+	public synchronized void onPause() {
+		super.onPause();
+		Log.e(TAG, "- ON PAUSE -");
+	}
 	
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e(TAG, "--- ON DESTROY ---");
-        
-        if (commHandler != null)
-        	commHandler.stop(this);
-    }
+	@Override
+	public void onStop() {
+		super.onStop();
+		Log.e(TAG, "-- ON STOP --");
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.e(TAG, "--- ON DESTROY ---");
+		
+		if (bluetoothModule != null)
+			bluetoothModule.stop();
+		
+		unregisterBroadcastReceiver();
+	}
+	
+	
+	
+	
+	
+
+
+	
+	
+	
 
 	private final Handler handler = new Handler() {
 		
@@ -131,6 +165,7 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
 				String deviceAddress = (String) msg.obj;
+				Log.e(TAG, "address: "+deviceAddress);
 //				BluetoothDevice remoteDevice = mBluetoothAdapter.getRemoteDevice(deviceAddress);
 //				connectDevice(remoteDevice, false);
 				break;

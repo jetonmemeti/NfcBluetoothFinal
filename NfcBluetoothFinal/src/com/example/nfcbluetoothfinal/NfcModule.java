@@ -16,7 +16,6 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.example.nfcbluetoothfinal.util.Messages;
-import com.example.nfcbluetoothfinal.util.P2PCommException;
 
 public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
 	private static final String TAG = "NfcModule";
@@ -24,22 +23,14 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	private NfcAdapter adapter = null;
 	private Handler handler = null;
 	
-	public NfcModule(Activity activity) throws P2PCommException {
-		adapter = NfcAdapter.getDefaultAdapter(activity);
-		if (adapter == null)
-			throw new P2PCommException(Messages.ERROR_NO_NFC);
-	}
-
-	public void setHandler(Handler handler) {
+	public NfcModule(Activity activity, NfcAdapter adapter, Handler handler) {
+		this.adapter = adapter;
 		this.handler = handler;
+		
+		setCallbacks(activity);
 	}
 
-	public boolean isEnabled() {
-		return adapter.isEnabled();
-	}
-	
-	public void setCallbacks(Activity activity) {
-		Log.e(TAG, "setting callbacks");
+	private void setCallbacks(Activity activity) {
 		// Register callback to set NDEF message
 		adapter.setNdefPushMessageCallback(this, activity);
 		// Register callback to listen for message-sent success
@@ -49,11 +40,10 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	@Override
 	public NdefMessage createNdefMessage(NfcEvent event) {
 		BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
-		if (bluetooth == null || !bluetooth.isEnabled()) {
-			Log.e(TAG, "bluetooth null or not enabled");
-		}
 		
 		NdefMessage msg = null;
+		
+		//TODO jeton: replace with p2pmessage
 		
 		byte[] bytes = bluetooth.getAddress().getBytes();
 		msg = new NdefMessage(new NdefRecord[] { createMimeRecord(
@@ -71,7 +61,6 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	@Override
 	public void onNdefPushComplete(NfcEvent event) {
 		handler.obtainMessage(Messages.NFC_PUSH_COMPLETE).sendToTarget();
-		Log.e(TAG, "ndef push complete");
 	}
 
 	public void processNfcIntent(Intent intent) {
@@ -79,8 +68,6 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
         // only one message sent during the beam
         NdefMessage msg = (NdefMessage) rawMsgs[0];
         // record 0 contains the MIME type, record 1 is the AAR, if present
-        
-        //TODO jeton: replace with private
         
         try {
         	String remoteDeviceAddress = new String(msg.getRecords()[0].getPayload());
