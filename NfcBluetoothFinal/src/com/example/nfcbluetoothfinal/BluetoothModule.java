@@ -102,6 +102,9 @@ public class BluetoothModule {
 	 *            The BluetoothDevice to connect
 	 */
 	public synchronized void connect() {
+		if (sessionInfos.getInitiatorDeviceAddress() == null)
+			Log.e(TAG, "got it where it is null");
+		
 		BluetoothDevice remoteDevice = adapter.getRemoteDevice(sessionInfos.getInitiatorDeviceAddress());
 		Log.d(TAG, "connect to: " + remoteDevice);
 

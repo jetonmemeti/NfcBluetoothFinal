@@ -177,6 +177,9 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
 				BluetoothSessionInitiationInformation infos = (BluetoothSessionInitiationInformation) msg.obj;
+				Log.e(TAG, "initiator-address: "+infos.getInitiatorDeviceAddress());
+				Log.e(TAG, "initiator-name: "+infos.getInitiatorDeviceName());
+				Log.e(TAG, "initiator-uuid: "+infos.getServiceUUID());
 				start(infos);
 				connectDevice();
 				break;

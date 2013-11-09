@@ -48,13 +48,13 @@ public class BluetoothSessionInitiationInformation implements Serializable {
 		byte[] bytes = null;
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ObjectOutputStream ous = null;
+		ObjectOutputStream oos = null;
 
-		ous = new ObjectOutputStream(baos);
-		ous.writeObject(session);
+		oos = new ObjectOutputStream(baos);
+		oos.writeObject(session);
 		bytes = baos.toByteArray();
 
-		ous.close();
+		oos.close();
 		baos.close();
 
 		return bytes;
