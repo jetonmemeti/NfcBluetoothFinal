@@ -20,6 +20,9 @@ import com.example.nfcbluetoothfinal.util.Messages;
 public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
 	private static final String TAG = "NfcModule";
 	
+	/**
+	 * If changed it needs to be adopted in the manifest file as well!!
+	 */
 	private static final String MIME_TYPE = "application/com.example.nfcbluetoothfinal";
 	
 	private NfcAdapter adapter = null;
