@@ -11,7 +11,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.example.nfcbluetoothfinal.util.BluetoothSession;
+import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class BluetoothModule {
@@ -25,7 +25,7 @@ public class BluetoothModule {
 	private ConnectThread connectThread;
 	private ConnectedThread connectedThread;
 	
-	private BluetoothSession session;
+	private BluetoothSessionInitiationInformation sessionInfos;
 	
 	public enum BluetoothState {
 		STATE_NONE, STATE_LISTENING, STATE_CONNECTING, STATE_CONNECTED
@@ -35,7 +35,13 @@ public class BluetoothModule {
 		this.adapter = adapter;
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
-		session = new BluetoothSession();
+		
+		//TODO jeton: both devices need same UUID!!!
+		sessionInfos = new BluetoothSessionInitiationInformation();
+	}
+	
+	public synchronized void setSessionInfos(BluetoothSessionInitiationInformation infos) {
+		this.sessionInfos = infos;
 	}
 
 	/**
@@ -95,8 +101,9 @@ public class BluetoothModule {
 	 * @param device
 	 *            The BluetoothDevice to connect
 	 */
-	public synchronized void connect(BluetoothDevice device) {
-		Log.d(TAG, "connect to: " + device);
+	public synchronized void connect() {
+		BluetoothDevice remoteDevice = adapter.getRemoteDevice(sessionInfos.getInitiatorDeviceAddress());
+		Log.d(TAG, "connect to: " + remoteDevice);
 
         // Cancel any thread attempting to make a connection
         if (state == BluetoothState.STATE_CONNECTING) {
@@ -113,7 +120,7 @@ public class BluetoothModule {
         }
 
         // Start the thread to connect with the given device
-        connectThread = new ConnectThread(device);
+        connectThread = new ConnectThread(remoteDevice);
         connectThread.start();
         setState(BluetoothState.STATE_CONNECTING);
 	}
@@ -235,7 +242,7 @@ public class BluetoothModule {
         public AcceptThread() {
             BluetoothServerSocket tmp = null;
             try {
-                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(session.getServiceName(), session.getServiceUUID());
+                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(sessionInfos.getServiceName(), sessionInfos.getServiceUUID());
             } catch (IOException e) {
             	Log.e(TAG, "listen() failed", e);
             }
@@ -305,7 +312,7 @@ public class BluetoothModule {
             BluetoothSocket tmp = null;
             
             try {
-                tmp = device.createInsecureRfcommSocketToServiceRecord(session.getServiceUUID());
+                tmp = device.createInsecureRfcommSocketToServiceRecord(sessionInfos.getServiceUUID());
             } catch (IOException e) { 
             	Log.e(TAG, "create() failed", e);
             }
@@ -389,7 +396,7 @@ public class BluetoothModule {
 					// Read from the InputStream
 					bytes = inputStream.read(buffer);
 					// Send the obtained bytes to the UI activity
-					handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_RECEIVED, bytes, -1, buffer).sendToTarget();
+					handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_RECEIVED, bytes).sendToTarget();
 				} catch (IOException e) {
 					Log.e(TAG, "disconnected", e);
 					connectionLost();
@@ -406,7 +413,7 @@ public class BluetoothModule {
 				outputStream.write(bytes);
 				
 				// Share the sent message back to the UI Activity
-                handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_SEND, -1, -1, bytes).sendToTarget();
+                handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_SEND, bytes).sendToTarget();
 			} catch (IOException e) {
 				Log.e(TAG, "Exception during write", e);
 			}

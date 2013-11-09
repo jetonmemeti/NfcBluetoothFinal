@@ -14,5 +14,6 @@ public class Messages {
 	public static final int BLUETOOTH_CONNECTION_FAILED = 7;
 	public static final int BLUETOOTH_STATE_CHANGED = 8;
 	public static final int BLUETOOTH_CONNECTION_ESTABLISHED = 9;
+	public static final int NFC_ERROR_PROCESSING_INFOS = 10;
 	
 }

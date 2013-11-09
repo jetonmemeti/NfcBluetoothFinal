@@ -3,7 +3,6 @@ package com.example.nfcbluetoothfinal;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
@@ -14,8 +13,10 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
+
 import com.example.nfcbluetoothfinal.BluetoothModule.BluetoothState;
 import com.example.nfcbluetoothfinal.util.BluetoothBroadcastReceiver;
+import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcBluetoothFinal extends Activity {
@@ -103,9 +104,23 @@ public class NfcBluetoothFinal extends Activity {
 		start();
 	}
 	
+	/*
+	 * TODO jeton: call listen or accept (i know who has to do what!!)
+	 */
 	private void start() {
+		Log.e(TAG, "called start()");
 		if (bluetoothModule != null) {
 			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
+				bluetoothModule.start();
+			}
+		}
+	}
+	
+	private void start(BluetoothSessionInitiationInformation infos) {
+		Log.e(TAG, "called start(info...)");
+		if (bluetoothModule != null) {
+			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
+				bluetoothModule.setSessionInfos(infos);
 				bluetoothModule.start();
 			}
 		}
@@ -140,15 +155,14 @@ public class NfcBluetoothFinal extends Activity {
 		unregisterBroadcastReceiver();
 	}
 	
-	private void connectDevice(String remoteDeviceAddress) {
+	private void connectDevice() {
 		Log.e(TAG, "should start now");
-		BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(remoteDeviceAddress);
-		bluetoothModule.connect(remoteDevice);
+		bluetoothModule.connect();
     }
 	
 	@SuppressLint("HandlerLeak")
 	private final Handler handler = new Handler() {
-		
+		//TODO jeton: error handling! e.g. what to do after nfc error processing infos?
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -162,13 +176,16 @@ public class NfcBluetoothFinal extends Activity {
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
-				String deviceAddress = (String) msg.obj;
-				start();
-				connectDevice(deviceAddress);
+				BluetoothSessionInitiationInformation infos = (BluetoothSessionInitiationInformation) msg.obj;
+				start(infos);
+				connectDevice();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
             	Log.e(TAG, "handler received: nfc push complete");
             	break;
+			case Messages.NFC_ERROR_PROCESSING_INFOS:
+				Log.e(TAG, "handler received: error processing nfc message!!");
+				break;
 			case Messages.BLUETOOTH_CONNECTION_ESTABLISHED:
 				Log.e(TAG, "handler received: bluetooth connection successfully established");
 				break;
@@ -202,7 +219,7 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			}
 		}
-		
+
 	};
 
 	@Override

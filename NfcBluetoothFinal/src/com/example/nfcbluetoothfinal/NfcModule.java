@@ -1,5 +1,6 @@
 package com.example.nfcbluetoothfinal;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import android.app.Activity;
@@ -15,6 +16,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
@@ -24,6 +26,8 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	 * If changed it needs to be adopted in the manifest file as well!!
 	 */
 	private static final String MIME_TYPE = "application/com.example.nfcbluetoothfinal";
+	
+	private static final String ERROR_MSG = "error occured";
 	
 	private NfcAdapter adapter = null;
 	private Handler handler = null;
@@ -45,15 +49,22 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	@Override
 	public NdefMessage createNdefMessage(NfcEvent event) {
 		BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
-		
+		BluetoothSessionInitiationInformation infos = new BluetoothSessionInitiationInformation(bluetooth.getAddress(), bluetooth.getName());
 		NdefMessage msg = null;
 		
-		//TODO jeton: replace with bluetoothmessage (needs to have encryption in it)
-		
-		byte[] bytes = bluetooth.getAddress().getBytes();
-		msg = new NdefMessage(new NdefRecord[] { 
-				createMimeRecord(MIME_TYPE, bytes)
-		});
+		byte[] bytes;
+		try {
+			bytes = BluetoothSessionInitiationInformation.serialize(infos);
+			msg = new NdefMessage(new NdefRecord[] { 
+					createMimeRecord(MIME_TYPE, bytes)
+			});
+		} catch (IOException e) {
+			Log.e(TAG, "could not serialize object");
+			bytes = ERROR_MSG.getBytes();
+			msg = new NdefMessage(new NdefRecord[] { 
+					createMimeRecord(MIME_TYPE, bytes)
+			});
+		}
 		return msg;
 	}
 	
@@ -75,13 +86,24 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
         NdefMessage msg = (NdefMessage) rawMsgs[0];
         // record 0 contains the MIME type, record 1 is the AAR, if present
         
-        try {
-        	String remoteDeviceAddress = new String(msg.getRecords()[0].getPayload());
-        	handler.obtainMessage(Messages.NFC_INTENT_PROCESSED, remoteDeviceAddress).sendToTarget();
-        } catch (Exception e) {
-        	Log.e(TAG, "error while deserializing!!", e);
-        	//TODO jeton: do something!
-        }
+    	byte[] bytes = msg.getRecords()[0].getPayload();
+    	BluetoothSessionInitiationInformation infos;
+        	
+    	try {
+    		infos = BluetoothSessionInitiationInformation.deserialize(bytes);
+    		handler.obtainMessage(Messages.NFC_INTENT_PROCESSED, infos).sendToTarget();
+    	} catch (Exception e) {
+    		Log.e(TAG, "error while deserializing!!", e);
+    		
+			String errorMsg = new String(bytes);
+			if (errorMsg.equals(ERROR_MSG)) {
+				//error occured on the sender
+			}
+    		
+			//TODO jeton: reset all when this goes wrong! on ndef push complete?
+			
+    		handler.obtainMessage(Messages.NFC_ERROR_PROCESSING_INFOS).sendToTarget();
+    	}
 	}
 
 }
