@@ -1,17 +1,19 @@
 package com.example.nfcbluetoothfinal;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
-
 import com.example.nfcbluetoothfinal.BluetoothModule.BluetoothState;
 import com.example.nfcbluetoothfinal.util.BluetoothBroadcastReceiver;
 import com.example.nfcbluetoothfinal.util.Messages;
@@ -57,7 +59,7 @@ public class NfcBluetoothFinal extends Activity {
 		if (!nfcAdapter.isEnabled()) {
 			//prompt dialog to enable nfc
 			Toast.makeText(this, Messages.ACTIVATE_NFC, Toast.LENGTH_LONG).show();
-			startActivity(new Intent(android.provider.Settings.ACTION_NFC_SETTINGS));
+			startActivity(new Intent(Settings.ACTION_NFC_SETTINGS));
 		} else if (!bluetoothAdapter.isEnabled()) {
 			//enable bluetooth programatically
 			registerBroadcastReceiver(handler);
@@ -69,11 +71,10 @@ public class NfcBluetoothFinal extends Activity {
 	}
 	
 	private void registerBroadcastReceiver(Handler handler) {
-		if (!broadcastReceiverRegistered) {
-			IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-			broadcastReceiver = new BluetoothBroadcastReceiver(handler);
-			this.registerReceiver(broadcastReceiver, filter);
-		}
+		IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+		broadcastReceiver = new BluetoothBroadcastReceiver(handler);
+		this.registerReceiver(broadcastReceiver, filter);
+		broadcastReceiverRegistered = true;
     }
 	
 	private void unregisterBroadcastReceiver() {
@@ -139,16 +140,13 @@ public class NfcBluetoothFinal extends Activity {
 		unregisterBroadcastReceiver();
 	}
 	
+	private void connectDevice(String remoteDeviceAddress) {
+		Log.e(TAG, "should start now");
+		BluetoothDevice remoteDevice = bluetoothAdapter.getRemoteDevice(remoteDeviceAddress);
+		bluetoothModule.connect(remoteDevice);
+    }
 	
-	
-	
-	
-
-
-	
-	
-	
-
+	@SuppressLint("HandlerLeak")
 	private final Handler handler = new Handler() {
 		
 		@Override
@@ -157,23 +155,54 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.BLUETOOTH_ENABLED:
 				Toast.makeText(getApplicationContext(), "turned bluetooth on", Toast.LENGTH_SHORT).show();
             	Log.e(TAG, "received broadcast intent");
-//            	if (mChatService == null)
-//                	setupChat();
-//            	startService();
-//            	initNfc();
+            	if (bluetoothModule == null)
+                	initBluetooth();
+            	start();
+            	initNfc();
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
 				String deviceAddress = (String) msg.obj;
-				Log.e(TAG, "address: "+deviceAddress);
-//				BluetoothDevice remoteDevice = mBluetoothAdapter.getRemoteDevice(deviceAddress);
-//				connectDevice(remoteDevice, false);
+				start();
+				connectDevice(deviceAddress);
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
             	Log.e(TAG, "handler received: nfc push complete");
             	break;
+			case Messages.BLUETOOTH_CONNECTION_ESTABLISHED:
+				Log.e(TAG, "handler received: bluetooth connection successfully established");
+				break;
+			case Messages.BLUETOOTH_CONNECTION_FAILED:
+				Log.e(TAG, "handler received: bluetooth connection failed");
+				break;
+			case Messages.BLUETOOTH_CONNECTION_LOST:
+				Log.e(TAG, "handler received: bluetooth connection lost");
+				break;
+			case Messages.BLUETOOTH_STATE_CHANGED:
+				switch ((BluetoothState) msg.obj) {
+				case STATE_NONE:
+					Log.e(TAG, "handler received: bluetooth state: NONE");
+					break;
+				case STATE_LISTENING:
+					Log.e(TAG, "handler received: bluetooth state: LISTENING");
+					break;
+				case STATE_CONNECTING:
+					Log.e(TAG, "handler received: bluetooth state: CONNECTING");
+					break;
+				case STATE_CONNECTED:
+					Log.e(TAG, "handler received: bluetooth state: CONNECTED");
+					break;
+				}
+				break;
+			case Messages.BLUETOOTH_MESSAGE_RECEIVED:
+				//TODO
+				break;
+			case Messages.BLUETOOTH_MESSAGE_SEND:
+				//TODO
+				break;
 			}
 		}
+		
 	};
 
 	@Override

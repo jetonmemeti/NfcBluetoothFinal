@@ -20,6 +20,8 @@ import com.example.nfcbluetoothfinal.util.Messages;
 public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
 	private static final String TAG = "NfcModule";
 	
+	private static final String MIME_TYPE = "application/com.example.nfcbluetoothfinal";
+	
 	private NfcAdapter adapter = null;
 	private Handler handler = null;
 	
@@ -43,11 +45,12 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 		
 		NdefMessage msg = null;
 		
-		//TODO jeton: replace with p2pmessage
+		//TODO jeton: replace with bluetoothmessage (needs to have encryption in it)
 		
 		byte[] bytes = bluetooth.getAddress().getBytes();
-		msg = new NdefMessage(new NdefRecord[] { createMimeRecord(
-				"application/com.example.nfcbluetooth", bytes) });
+		msg = new NdefMessage(new NdefRecord[] { 
+				createMimeRecord(MIME_TYPE, bytes)
+		});
 		return msg;
 	}
 	
