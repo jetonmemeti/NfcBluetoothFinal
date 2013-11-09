@@ -116,16 +116,6 @@ public class NfcBluetoothFinal extends Activity {
 		}
 	}
 	
-	private void start(BluetoothSessionInitiationInformation infos) {
-		Log.e(TAG, "called start(info...)");
-		if (bluetoothModule != null) {
-			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
-				bluetoothModule.setSessionInfos(infos);
-				bluetoothModule.start();
-			}
-		}
-	}
-	
 	@Override
 	public void onNewIntent(Intent intent) {
 		// onResume gets called after this to handle the intent
@@ -180,7 +170,8 @@ public class NfcBluetoothFinal extends Activity {
 				Log.e(TAG, "initiator-address: "+infos.getInitiatorDeviceAddress());
 				Log.e(TAG, "initiator-name: "+infos.getInitiatorDeviceName());
 				Log.e(TAG, "initiator-uuid: "+infos.getServiceUUID());
-				start(infos);
+				bluetoothModule.setSessionInfos(infos);
+				start();
 				connectDevice();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
