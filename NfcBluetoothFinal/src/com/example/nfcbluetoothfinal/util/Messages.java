@@ -2,6 +2,7 @@ package com.example.nfcbluetoothfinal.util;
 
 public class Messages {
 	public static final String ERROR_NO_BLUETOOTH = "Your device does not support bluetooth. Turning off.";
+	public static final String TURNED_BLUETOOTH_OFF = "Please turn bluetooth on to continue.";
 	public static final String ERROR_NO_NFC = "Your device does not support nfc. Turning off.";
 	public static final String ACTIVATE_NFC = "Please activate NFC and press Back to return to the application!";
 	
@@ -15,5 +16,6 @@ public class Messages {
 	public static final int BLUETOOTH_STATE_CHANGED = 8;
 	public static final int BLUETOOTH_CONNECTION_ESTABLISHED = 9;
 	public static final int NFC_ERROR_PROCESSING_INFOS = 10;
+	public static final int BLUETOOTH_TURNED_OFF = 11;
 	
 }
