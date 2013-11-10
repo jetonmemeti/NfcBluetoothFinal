@@ -66,8 +66,7 @@ public class BluetoothModule {
 	}
 
 	/**
-	 * Start the bluetooth module. Specifically start AcceptThread to begin a
-	 * session in listening (server) mode. Called by the Activity onResume()
+	 * Start listening for incomming bluetooth connections.
 	 */
 	public synchronized void startListening() {
         // Cancel any thread attempting to make a connection
@@ -150,7 +149,6 @@ public class BluetoothModule {
         connectedThread = new ConnectedThread(socket);
         connectedThread.start();
 
-        // Send the name of the connected device back to the UI Activity
         handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_ESTABLISHED).sendToTarget();
 
         setState(BluetoothState.STATE_CONNECTED);

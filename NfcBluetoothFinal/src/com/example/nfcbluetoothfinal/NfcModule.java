@@ -27,10 +27,9 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	 */
 	private static final String MIME_TYPE = "application/com.example.nfcbluetoothfinal";
 	
-	private static final String ERROR_MSG = "error occured";
-	
 	private NfcAdapter adapter = null;
 	private Handler handler = null;
+	private boolean success = false;
 	
 	public NfcModule(Activity activity, NfcAdapter adapter, Handler handler) {
 		this.adapter = adapter;
@@ -58,9 +57,10 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 			msg = new NdefMessage(new NdefRecord[] { 
 					createMimeRecord(MIME_TYPE, bytes)
 			});
+			success = true;
 		} catch (IOException e) {
-			Log.e(TAG, "could not serialize object");
-			bytes = ERROR_MSG.getBytes();
+			Log.e(TAG, "error while serializing", e);
+			bytes = "error occured".getBytes(); //string content is irrelevant
 			msg = new NdefMessage(new NdefRecord[] { 
 					createMimeRecord(MIME_TYPE, bytes)
 			});
@@ -77,7 +77,7 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	
 	@Override
 	public void onNdefPushComplete(NfcEvent event) {
-		handler.obtainMessage(Messages.NFC_PUSH_COMPLETE).sendToTarget();
+		handler.obtainMessage(Messages.NFC_PUSH_COMPLETE, success).sendToTarget();
 	}
 
 	public void processNfcIntent(Intent intent) {
@@ -93,15 +93,7 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
     		infos = BluetoothSession.deserialize(bytes);
     		handler.obtainMessage(Messages.NFC_INTENT_PROCESSED, infos).sendToTarget();
     	} catch (Exception e) {
-    		Log.e(TAG, "error while deserializing!!", e);
-    		
-			String errorMsg = new String(bytes);
-			if (errorMsg.equals(ERROR_MSG)) {
-				//error occured on the sender
-			}
-    		
-			//TODO jeton: reset all when this goes wrong! on ndef push complete?
-			
+    		Log.e(TAG, "error while deserializing", e);
     		handler.obtainMessage(Messages.NFC_ERROR_PROCESSING_INFOS).sendToTarget();
     	}
 	}

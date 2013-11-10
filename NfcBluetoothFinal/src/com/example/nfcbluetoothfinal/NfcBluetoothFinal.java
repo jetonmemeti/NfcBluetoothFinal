@@ -97,22 +97,9 @@ public class NfcBluetoothFinal extends Activity {
 			if (nfcModule != null)
 				nfcModule.processNfcIntent(getIntent());
 		}
-		
-//		start();
 	}
 	
-	/*
-	 * TODO jeton: call listen or accept (i know who has to do what!!)
-	 */
-//	private void start() {
-//		if (bluetoothModule != null) {
-//			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
-//				bluetoothModule.start();
-//			}
-//		}
-//	}
-	
-	private void startListening() {
+	private void startListeningBluetooth() {
 		if (bluetoothModule != null) {
 			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
 				bluetoothModule.startListening();
@@ -146,44 +133,54 @@ public class NfcBluetoothFinal extends Activity {
 		unregisterBroadcastReceiver();
 	}
 	
+	private void stopBluetoothModule() {
+		if (bluetoothModule != null)
+			bluetoothModule.stop();
+	}
+	
 	@SuppressLint("HandlerLeak")
 	private final Handler handler = new Handler() {
-		//TODO jeton: error handling! e.g. what to do after nfc error processing infos?
+		
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case Messages.BLUETOOTH_ENABLED:
 				Toast.makeText(getApplicationContext(), "turned bluetooth on", Toast.LENGTH_SHORT).show();
-            	Log.e(TAG, "received broadcast intent");
             	if (bluetoothModule == null)
                 	initBluetooth();
             	initNfc();
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
-				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
 				BluetoothSession infos = (BluetoothSession) msg.obj;
 				bluetoothModule.setSessionInfos(infos);
 				bluetoothModule.connect();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
-            	Log.e(TAG, "handler received: nfc push complete");
-            	startListening();
-            	break;
+				Boolean success = (Boolean) msg.obj;
+				if (success) {
+					startListeningBluetooth();
+					break;
+				}
 			case Messages.NFC_ERROR_PROCESSING_INFOS:
-				Log.e(TAG, "handler received: error processing nfc message!!");
+				Toast.makeText(getApplicationContext(), Messages.ERROR_NFC, Toast.LENGTH_LONG).show();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_ESTABLISHED:
-				Log.e(TAG, "handler received: bluetooth connection successfully established");
+				//actually no need to do anything
+				break;
+			case Messages.BLUETOOTH_TURNED_OFF:
+				Toast.makeText(getApplicationContext(), Messages.TURNED_BLUETOOTH_OFF, Toast.LENGTH_LONG).show();
+				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_FAILED:
-				//TODO jeton: now what?
-				Log.e(TAG, "handler received: bluetooth connection failed");
+				Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_FAILED, Toast.LENGTH_LONG).show();
+				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_LOST:
-				//TODO jeton: now what?
-				Log.e(TAG, "handler received: bluetooth connection lost");
+				Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_LOST, Toast.LENGTH_LONG).show();
+				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_STATE_CHANGED:
+				//TODO jeton: now what?
 				switch ((BluetoothState) msg.obj) {
 				case STATE_NONE:
 					Log.e(TAG, "handler received: bluetooth state: NONE");
@@ -199,16 +196,11 @@ public class NfcBluetoothFinal extends Activity {
 					break;
 				}
 				break;
-			case Messages.BLUETOOTH_TURNED_OFF:
-				if (bluetoothModule != null)
-					bluetoothModule.stop();
-				Toast.makeText(NfcBluetoothFinal.this, Messages.TURNED_BLUETOOTH_OFF, Toast.LENGTH_LONG).show();
-				break;
 			case Messages.BLUETOOTH_MESSAGE_RECEIVED:
-				//TODO
+				//TODO jeton: now what?
 				break;
 			case Messages.BLUETOOTH_MESSAGE_SEND:
-				//TODO
+				//TODO jeton: now what?
 				break;
 			}
 		}
