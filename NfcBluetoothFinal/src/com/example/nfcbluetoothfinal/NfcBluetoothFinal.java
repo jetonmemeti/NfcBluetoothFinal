@@ -183,16 +183,12 @@ public class NfcBluetoothFinal extends Activity {
 				//TODO jeton: now what?
 				switch ((BluetoothState) msg.obj) {
 				case STATE_NONE:
-					Log.e(TAG, "handler received: bluetooth state: NONE");
 					break;
 				case STATE_LISTENING:
-					Log.e(TAG, "handler received: bluetooth state: LISTENING");
 					break;
 				case STATE_CONNECTING:
-					Log.e(TAG, "handler received: bluetooth state: CONNECTING");
 					break;
 				case STATE_CONNECTED:
-					Log.e(TAG, "handler received: bluetooth state: CONNECTED");
 					break;
 				}
 				break;

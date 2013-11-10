@@ -58,7 +58,7 @@ public class BluetoothModule {
 	 *            one of the possible enum BluetoothStates
 	 */
 	public synchronized void setState(BluetoothState state) {
-		Log.d(TAG, "setState() " + this.state + " -> " + state);
+		Log.i(TAG, "setState() " + this.state + " -> " + state);
         this.state = state;
 
         // Give the new state to the Handler so the UI Activity can update
@@ -251,7 +251,6 @@ public class BluetoothModule {
      
         /** Will cancel the listening socket, and cause the thread to finish */
         public void cancel() {
-            Log.d(TAG, "cancel accept thread");
             try {
                 serverSocket.close();
             } catch (IOException e) {
