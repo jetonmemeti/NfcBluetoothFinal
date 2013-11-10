@@ -63,6 +63,7 @@ public class NfcBluetoothFinal extends Activity {
 			registerBroadcastReceiver(handler);
 			bluetoothAdapter.enable();
 		} else {
+			registerBroadcastReceiver(handler);
 			initBluetooth();
 			initNfc();
 		}
@@ -131,10 +132,6 @@ public class NfcBluetoothFinal extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		stop();
-	}
-	
-	private void stop() {
 		if (bluetoothModule != null)
 			bluetoothModule.stop();
 		
@@ -194,7 +191,8 @@ public class NfcBluetoothFinal extends Activity {
 				}
 				break;
 			case Messages.BLUETOOTH_TURNED_OFF:
-				stop();
+				if (bluetoothModule != null)
+					bluetoothModule.stop();
 				Toast.makeText(NfcBluetoothFinal.this, Messages.TURNED_BLUETOOTH_OFF, Toast.LENGTH_LONG).show();
 				break;
 			case Messages.BLUETOOTH_MESSAGE_RECEIVED:

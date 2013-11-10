@@ -27,6 +27,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
 		        handler.obtainMessage(Messages.BLUETOOTH_ENABLED).sendToTarget();
 			} else if (stateInt == BluetoothAdapter.STATE_TURNING_OFF && prevStateInt == BluetoothAdapter.STATE_ON) {
 				//TODO jeton: does not work!!
+				Log.e("BluetoothBroadcastReceiver", "bluetooth turning off recognized");
 				handler.obtainMessage(Messages.BLUETOOTH_TURNED_OFF).sendToTarget();
 //			} else if (stateInt == BluetoothAdapter.STATE_OFF && prevStateInt == BluetoothAdapter.STATE_TURNING_OFF) {
 			} else if (stateInt == BluetoothAdapter.STATE_OFF) {
