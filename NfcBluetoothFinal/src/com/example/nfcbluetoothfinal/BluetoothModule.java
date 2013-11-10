@@ -66,7 +66,7 @@ public class BluetoothModule {
 	}
 
 	/**
-	 * Start listening for incomming bluetooth connections.
+	 * Start listening for incoming bluetooth connections.
 	 */
 	public synchronized void startListening() {
         // Cancel any thread attempting to make a connection
@@ -249,7 +249,9 @@ public class BluetoothModule {
             }
         }
      
-        /** Will cancel the listening socket, and cause the thread to finish */
+		/**
+		 * Will cancel the listening socket, and cause the thread to finish
+		 */
         public void cancel() {
             try {
                 serverSocket.close();
@@ -308,7 +310,9 @@ public class BluetoothModule {
             connected(socket, device);
         }
      
-        /** Will cancel an in-progress connection, and close the socket */
+        /**
+         * Will cancel an in-progress connection, and close the socket
+         */
         public void cancel() {
             try {
                 socket.close();
@@ -362,7 +366,9 @@ public class BluetoothModule {
 			}
 		}
 
-		/* Call this from the main activity to send data to the remote device */
+		/**
+		 * Call this from the main activity to send data to the remote device
+		 */
 		public void write(byte[] bytes) {
 			try {
 				outputStream.write(bytes);
@@ -374,7 +380,9 @@ public class BluetoothModule {
 			}
 		}
 
-		/* Call this from the main activity to shutdown the connection */
+		/**
+		 * Call this from the main activity to shutdown the connection
+		 */
 		public void cancel() {
 			try {
 				socket.close();
