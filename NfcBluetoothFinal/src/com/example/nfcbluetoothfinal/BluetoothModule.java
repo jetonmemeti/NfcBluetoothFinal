@@ -35,6 +35,7 @@ public class BluetoothModule {
 		this.adapter = adapter;
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
+		sessionInfos = new BluetoothSession();
 	}
 	
 	public synchronized void setSessionInfos(BluetoothSession infos) {

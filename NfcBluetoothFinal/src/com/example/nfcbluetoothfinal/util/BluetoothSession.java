@@ -18,6 +18,8 @@ public class BluetoothSession implements Serializable {
 	private String initiatorDeviceAddress = null;
 	private String initiatorDeviceName = null;
 	
+	public BluetoothSession() { }
+	
 	public BluetoothSession(String initiatorDeviceAddress, String initiatorDeviceName) {
 		this.initiatorDeviceAddress = initiatorDeviceAddress;
 		this.initiatorDeviceName = initiatorDeviceName;
