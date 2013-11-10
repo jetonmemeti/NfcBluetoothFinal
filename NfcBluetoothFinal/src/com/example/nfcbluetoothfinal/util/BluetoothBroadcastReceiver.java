@@ -5,9 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.util.Log;
-
-import com.example.nfcbluetoothfinal.util.Messages;
 
 public class BluetoothBroadcastReceiver extends BroadcastReceiver {
 	private Handler handler;
@@ -26,14 +23,7 @@ public class BluetoothBroadcastReceiver extends BroadcastReceiver {
 			if (stateInt == BluetoothAdapter.STATE_ON) {
 		        handler.obtainMessage(Messages.BLUETOOTH_ENABLED).sendToTarget();
 			} else if (stateInt == BluetoothAdapter.STATE_TURNING_OFF && prevStateInt == BluetoothAdapter.STATE_ON) {
-				//TODO jeton: does not work!!
-				Log.e("BluetoothBroadcastReceiver", "bluetooth turning off recognized");
 				handler.obtainMessage(Messages.BLUETOOTH_TURNED_OFF).sendToTarget();
-//			} else if (stateInt == BluetoothAdapter.STATE_OFF && prevStateInt == BluetoothAdapter.STATE_TURNING_OFF) {
-			} else if (stateInt == BluetoothAdapter.STATE_OFF) {
-				Log.e("BluetoothBroadcastReceiver", "bluetooth off");
-				if (prevStateInt == BluetoothAdapter.STATE_TURNING_OFF)
-					Log.e("BluetoothBroadcastReceiver", "prev state was turning off");
 			}
 		}
 	}
