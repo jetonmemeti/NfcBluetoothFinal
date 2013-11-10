@@ -11,21 +11,21 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
-import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
+import com.example.nfcbluetoothfinal.util.BluetoothSession;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class BluetoothModule {
 	private static final String TAG = "BluetoothModule";
 	
-	private Handler handler = null;
-	private BluetoothAdapter adapter = null;
+	private Handler handler;
+	private BluetoothAdapter adapter;
 	private BluetoothState state;
 	
 	private AcceptThread acceptThread;
 	private ConnectThread connectThread;
 	private ConnectedThread connectedThread;
 	
-	private BluetoothSessionInitiationInformation sessionInfos;
+	private BluetoothSession sessionInfos;
 	
 	public enum BluetoothState {
 		STATE_NONE, STATE_LISTENING, STATE_CONNECTING, STATE_CONNECTED
@@ -35,12 +35,9 @@ public class BluetoothModule {
 		this.adapter = adapter;
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
-		
-		//TODO jeton: both devices need same UUID!!!
-		sessionInfos = new BluetoothSessionInitiationInformation();
 	}
 	
-	public synchronized void setSessionInfos(BluetoothSessionInitiationInformation infos) {
+	public synchronized void setSessionInfos(BluetoothSession infos) {
 		this.sessionInfos = infos;
 	}
 
@@ -72,8 +69,6 @@ public class BluetoothModule {
 	 * session in listening (server) mode. Called by the Activity onResume()
 	 */
 	public synchronized void start() {
-		Log.d(TAG, "start");
-
         // Cancel any thread attempting to make a connection
         if (connectThread != null) {
         	connectThread.cancel();
@@ -102,12 +97,6 @@ public class BluetoothModule {
 	 *            The BluetoothDevice to connect
 	 */
 	public synchronized void connect() {
-		if (sessionInfos.getInitiatorDeviceAddress() == null)
-			Log.e(TAG, "got it where it is null");
-		
-		BluetoothDevice remoteDevice = adapter.getRemoteDevice(sessionInfos.getInitiatorDeviceAddress());
-		Log.d(TAG, "connect to: " + remoteDevice);
-
         // Cancel any thread attempting to make a connection
         if (state == BluetoothState.STATE_CONNECTING) {
             if (connectThread != null) {
@@ -123,6 +112,7 @@ public class BluetoothModule {
         }
 
         // Start the thread to connect with the given device
+        BluetoothDevice remoteDevice = adapter.getRemoteDevice(sessionInfos.getInitiatorDeviceAddress());
         connectThread = new ConnectThread(remoteDevice);
         connectThread.start();
         setState(BluetoothState.STATE_CONNECTING);
@@ -137,8 +127,6 @@ public class BluetoothModule {
 	 *            The BluetoothDevice that has been connected
 	 */
 	public synchronized void connected(BluetoothSocket socket, BluetoothDevice device) {
-		Log.d(TAG, "connected");
-
         // Cancel the thread that completed the connection
         if (connectThread != null) {
         	connectThread.cancel();
@@ -171,8 +159,6 @@ public class BluetoothModule {
 	 * stop all threads
 	 */
 	public synchronized void stop() {
-		Log.d(TAG, "stop");
-
         if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
@@ -253,8 +239,6 @@ public class BluetoothModule {
         }
      
         public void run() {
-        	Log.d(TAG, "BEGIN mAcceptThread");
-        	
             BluetoothSocket socket = null;
             // Keep listening until exception occurs or a socket is returned
             while (state != BluetoothState.STATE_CONNECTED) {
@@ -286,7 +270,6 @@ public class BluetoothModule {
 					}
                 }
             }
-            Log.e(TAG, "END acceptThread");
         }
      
         /** Will cancel the listening socket, and cause the thread to finish */
@@ -310,7 +293,6 @@ public class BluetoothModule {
         private final BluetoothDevice device;
      
         public ConnectThread(BluetoothDevice device) {
-        	Log.d(TAG, "create ConnectThread");
         	this.device = device;
             BluetoothSocket tmp = null;
             
@@ -324,8 +306,6 @@ public class BluetoothModule {
         }
      
         public void run() {
-        	Log.e(TAG, "BEGIN connectThread");
-        	
         	if (adapter.isDiscovering())
         		adapter.cancelDiscovery();
      
@@ -372,7 +352,6 @@ public class BluetoothModule {
 		private final OutputStream outputStream;
 
 		public ConnectedThread(BluetoothSocket socket) {
-			Log.d(TAG, "create ConnectedThread");
 			this.socket = socket;
 			InputStream tmpIn = null;
 			OutputStream tmpOut = null;
@@ -389,7 +368,6 @@ public class BluetoothModule {
 		}
 
 		public void run() {
-			Log.e(TAG, "BEGIN connectedThread");
 			byte[] buffer = new byte[1024];
 			int bytes;
 

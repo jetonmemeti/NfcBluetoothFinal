@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.example.nfcbluetoothfinal.BluetoothModule.BluetoothState;
 import com.example.nfcbluetoothfinal.util.BluetoothBroadcastReceiver;
-import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
+import com.example.nfcbluetoothfinal.util.BluetoothSession;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcBluetoothFinal extends Activity {
@@ -34,8 +34,6 @@ public class NfcBluetoothFinal extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		Log.e(TAG, "+++ ON CREATE +++");
 		
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (bluetoothAdapter == null) {
@@ -55,7 +53,6 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-		Log.e(TAG, "++ ON START ++");
 		
 		if (!nfcAdapter.isEnabled()) {
 			//prompt dialog to enable nfc
@@ -94,7 +91,6 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public synchronized void onResume() {
 		super.onResume();
-		Log.e(TAG, "+ ON RESUME +");
 		
 		if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
 			if (nfcModule != null)
@@ -108,7 +104,6 @@ public class NfcBluetoothFinal extends Activity {
 	 * TODO jeton: call listen or accept (i know who has to do what!!)
 	 */
 	private void start() {
-		Log.e(TAG, "called start()");
 		if (bluetoothModule != null) {
 			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
 				bluetoothModule.start();
@@ -125,30 +120,22 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public synchronized void onPause() {
 		super.onPause();
-		Log.e(TAG, "- ON PAUSE -");
 	}
 	
 	@Override
 	public void onStop() {
 		super.onStop();
-		Log.e(TAG, "-- ON STOP --");
 	}
 	
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.e(TAG, "--- ON DESTROY ---");
 		
 		if (bluetoothModule != null)
 			bluetoothModule.stop();
 		
 		unregisterBroadcastReceiver();
 	}
-	
-	private void connectDevice() {
-		Log.e(TAG, "should start now");
-		bluetoothModule.connect();
-    }
 	
 	@SuppressLint("HandlerLeak")
 	private final Handler handler = new Handler() {
@@ -166,13 +153,10 @@ public class NfcBluetoothFinal extends Activity {
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
-				BluetoothSessionInitiationInformation infos = (BluetoothSessionInitiationInformation) msg.obj;
-				Log.e(TAG, "initiator-address: "+infos.getInitiatorDeviceAddress());
-				Log.e(TAG, "initiator-name: "+infos.getInitiatorDeviceName());
-				Log.e(TAG, "initiator-uuid: "+infos.getServiceUUID());
+				BluetoothSession infos = (BluetoothSession) msg.obj;
 				bluetoothModule.setSessionInfos(infos);
 				start();
-				connectDevice();
+				bluetoothModule.connect();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
             	Log.e(TAG, "handler received: nfc push complete");

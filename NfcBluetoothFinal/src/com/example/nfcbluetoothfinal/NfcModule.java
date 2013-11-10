@@ -16,7 +16,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.example.nfcbluetoothfinal.util.BluetoothSessionInitiationInformation;
+import com.example.nfcbluetoothfinal.util.BluetoothSession;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteCallback {
@@ -49,12 +49,12 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
 	@Override
 	public NdefMessage createNdefMessage(NfcEvent event) {
 		BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
-		BluetoothSessionInitiationInformation infos = new BluetoothSessionInitiationInformation(bluetooth.getAddress(), bluetooth.getName());
+		BluetoothSession infos = new BluetoothSession(bluetooth.getAddress(), bluetooth.getName());
 		NdefMessage msg = null;
 		
 		byte[] bytes;
 		try {
-			bytes = BluetoothSessionInitiationInformation.serialize(infos);
+			bytes = BluetoothSession.serialize(infos);
 			msg = new NdefMessage(new NdefRecord[] { 
 					createMimeRecord(MIME_TYPE, bytes)
 			});
@@ -87,10 +87,10 @@ public class NfcModule implements CreateNdefMessageCallback, OnNdefPushCompleteC
         // record 0 contains the MIME type, record 1 is the AAR, if present
         
     	byte[] bytes = msg.getRecords()[0].getPayload();
-    	BluetoothSessionInitiationInformation infos;
+    	BluetoothSession infos;
         	
     	try {
-    		infos = BluetoothSessionInitiationInformation.deserialize(bytes);
+    		infos = BluetoothSession.deserialize(bytes);
     		handler.obtainMessage(Messages.NFC_INTENT_PROCESSED, infos).sendToTarget();
     	} catch (Exception e) {
     		Log.e(TAG, "error while deserializing!!", e);
