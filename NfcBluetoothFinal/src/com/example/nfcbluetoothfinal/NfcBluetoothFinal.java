@@ -98,16 +98,24 @@ public class NfcBluetoothFinal extends Activity {
 				nfcModule.processNfcIntent(getIntent());
 		}
 		
-		start();
+//		start();
 	}
 	
 	/*
 	 * TODO jeton: call listen or accept (i know who has to do what!!)
 	 */
-	private void start() {
+//	private void start() {
+//		if (bluetoothModule != null) {
+//			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
+//				bluetoothModule.start();
+//			}
+//		}
+//	}
+	
+	private void startListening() {
 		if (bluetoothModule != null) {
 			if (bluetoothModule.getSate() == BluetoothState.STATE_NONE) {
-				bluetoothModule.start();
+				bluetoothModule.startListening();
 			}
 		}
 	}
@@ -149,18 +157,17 @@ public class NfcBluetoothFinal extends Activity {
             	Log.e(TAG, "received broadcast intent");
             	if (bluetoothModule == null)
                 	initBluetooth();
-            	start();
             	initNfc();
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				Log.e(TAG, "handler received nfc intent --> ready to start bluetooth connection");
 				BluetoothSession infos = (BluetoothSession) msg.obj;
 				bluetoothModule.setSessionInfos(infos);
-				start();
 				bluetoothModule.connect();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
             	Log.e(TAG, "handler received: nfc push complete");
+            	startListening();
             	break;
 			case Messages.NFC_ERROR_PROCESSING_INFOS:
 				Log.e(TAG, "handler received: error processing nfc message!!");
@@ -169,9 +176,11 @@ public class NfcBluetoothFinal extends Activity {
 				Log.e(TAG, "handler received: bluetooth connection successfully established");
 				break;
 			case Messages.BLUETOOTH_CONNECTION_FAILED:
+				//TODO jeton: now what?
 				Log.e(TAG, "handler received: bluetooth connection failed");
 				break;
 			case Messages.BLUETOOTH_CONNECTION_LOST:
+				//TODO jeton: now what?
 				Log.e(TAG, "handler received: bluetooth connection lost");
 				break;
 			case Messages.BLUETOOTH_STATE_CHANGED:

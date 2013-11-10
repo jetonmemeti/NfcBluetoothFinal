@@ -69,7 +69,7 @@ public class BluetoothModule {
 	 * Start the bluetooth module. Specifically start AcceptThread to begin a
 	 * session in listening (server) mode. Called by the Activity onResume()
 	 */
-	public synchronized void start() {
+	public synchronized void startListening() {
         // Cancel any thread attempting to make a connection
         if (connectThread != null) {
         	connectThread.cancel();
@@ -199,28 +199,6 @@ public class BluetoothModule {
         r.write(out);
     }
 	
-	/**
-     * Indicate that the connection attempt failed and notify the UI Activity.
-     */
-    private void connectionFailed() {
-        // Send a failure message back to the Activity
-        handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_FAILED).sendToTarget();;
-
-        // Start the service over to restart listening mode
-        BluetoothModule.this.start();
-    }
-	
-	/**
-     * Indicate that the connection was lost and notify the UI Activity.
-     */
-    private void connectionLost() {
-        // Send a failure message back to the Activity
-        handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_LOST).sendToTarget();;
-
-        // Start the service over to restart listening mode
-        BluetoothModule.this.start();
-    }
-	
     /**
      * This thread runs while listening for incoming connections. It behaves
      * like a server-side client. It runs until a connection is accepted
@@ -321,7 +299,7 @@ public class BluetoothModule {
                 } catch (IOException e2) {
                 	Log.e(TAG, "unable to close() socket during connection failure", e2);
                 }
-                connectionFailed();
+                handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_FAILED).sendToTarget();
                 return;
             }
             
@@ -381,9 +359,7 @@ public class BluetoothModule {
 					handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_RECEIVED, bytes).sendToTarget();
 				} catch (IOException e) {
 					Log.e(TAG, "disconnected", e);
-					connectionLost();
-					// Start the service over to restart listening mode
-					BluetoothModule.this.start();
+					handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_LOST).sendToTarget();
 					break;
 				}
 			}
