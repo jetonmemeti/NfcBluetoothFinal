@@ -131,6 +131,9 @@ public class NfcBluetoothFinal extends Activity {
 			bluetoothModule.stop();
 		
 		unregisterBroadcastReceiver();
+		
+		if (bluetoothAdapter.isEnabled())
+			bluetoothAdapter.disable();
 	}
 	
 	private void stopBluetoothModule() {
