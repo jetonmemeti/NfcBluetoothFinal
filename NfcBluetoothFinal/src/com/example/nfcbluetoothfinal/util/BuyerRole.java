@@ -9,16 +9,19 @@ import com.example.nfcbluetoothfinal.BluetoothModule;
 public class BuyerRole implements PaymentRole, Serializable {
 	private static final long serialVersionUID = -6308811188885952621L;
 
-	public static final int STATE_START = 0;
-	public static final int STATE_WAIT_FOR_PAYMENT_REQUEST = 1;
-	public static final int STATE_PAYMENT_CONFIRMATION_SENT = 2;
-	public static final int STATE_WAIT_FOR_TRANSACTION_CONFIRMATION = 3;
-	public static final int STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT = 4;
+	private enum State {
+		STATE_START,
+		STATE_WAIT_FOR_PAYMENT_REQUEST,
+		STATE_PAYMENT_CONFIRMATION_SENT,
+		STATE_WAIT_FOR_TRANSACTION_CONFIRMATION,
+		STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT,
+		STATE_END;
+	}
 	
-	private int state;
+	private State state; 
 	
 	public BuyerRole() {
-		this.state = STATE_START;
+		this.state = State.STATE_START;
 	}
 	
 	@Override
@@ -27,7 +30,7 @@ public class BuyerRole implements PaymentRole, Serializable {
 		switch (state) {
 		case STATE_START:
 			Log.i("BuyerRole", "STATE_START");
-			state = STATE_WAIT_FOR_PAYMENT_REQUEST;
+			state = State.STATE_WAIT_FOR_PAYMENT_REQUEST;
 			break;
 		case STATE_WAIT_FOR_PAYMENT_REQUEST:
 			s = new String(bytes);
@@ -35,13 +38,13 @@ public class BuyerRole implements PaymentRole, Serializable {
 			
 			s = "confirmPayment(Cb=Eprb(SA;BA;BtcA;TNrs;TNrb), BA)";
 			bluetoothModule.write(s.getBytes());
-			state = STATE_PAYMENT_CONFIRMATION_SENT;
+			state = State.STATE_PAYMENT_CONFIRMATION_SENT;
 			break;
 		case STATE_PAYMENT_CONFIRMATION_SENT:
 			// wait for transaction confirmation
 			s = new String(bytes);
 			Log.i("BuyerRole", "STATE_PAYMENT_CONFIRMATION_SENT: " + s);
-			state = STATE_WAIT_FOR_TRANSACTION_CONFIRMATION;
+			state = State.STATE_WAIT_FOR_TRANSACTION_CONFIRMATION;
 			break;
 		case STATE_WAIT_FOR_TRANSACTION_CONFIRMATION:
 			s = new String(bytes);
@@ -49,12 +52,17 @@ public class BuyerRole implements PaymentRole, Serializable {
 			
 			s = "ackTransaction()";
 			bluetoothModule.write(s.getBytes());
-			state = STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT;
+			state = State.STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT;
 			break;
 		case STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT:
 			s = new String(bytes);
 			Log.i("BuyerRole", "STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT: " + s);
-			//TODO jeton: finish protocol!! handler.obtainMessage() ?
+			
+			bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_FINISHED).sendToTarget();
+			state = State.STATE_END;
+			break;
+		case STATE_END:
+			//do nothing
 			break;
 		}
 	}

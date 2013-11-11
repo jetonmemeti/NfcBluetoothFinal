@@ -126,11 +126,12 @@ public class NfcBluetoothFinal extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		if (bluetoothModule != null)
-			bluetoothModule.stop();
-		
 		unregisterBroadcastReceiver();
-		
+		stopBluetoothModule();
+		disableBluetooth();
+	}
+
+	private void disableBluetooth() {
 		if (bluetoothAdapter.isEnabled())
 			bluetoothAdapter.disable();
 	}
@@ -188,7 +189,6 @@ public class NfcBluetoothFinal extends Activity {
 				case STATE_CONNECTING:
 					break;
 				case STATE_CONNECTED:
-					//TODO jeton: start protocol!
 					bluetoothModule.processProtocol(null);
 					//TODO jeton: on fail or abort finish protocol!!
 					break;
@@ -197,6 +197,13 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.P2P_PROTOCOL_MESSAGE:
 				byte[] bytes = (byte[]) msg.obj;
 				bluetoothModule.processProtocol(bytes);
+			case Messages.P2P_PROTOCOL_FINISHED:
+				//TODO jeton: check if it works
+				//TODO jeton: assure that both finish at same time!!! do I need a further state and communication?
+				unregisterBroadcastReceiver();
+				stopBluetoothModule();
+				disableBluetooth();
+				break;
 			}
 		}
 

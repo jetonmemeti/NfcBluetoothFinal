@@ -21,6 +21,7 @@ public class Messages {
 	public static final int BLUETOOTH_TURNED_OFF = 11;
 	
 	public static final int P2P_PROTOCOL_MESSAGE = 12;
+	public static final int P2P_PROTOCOL_FINISHED = 13;
 	
 	
 }

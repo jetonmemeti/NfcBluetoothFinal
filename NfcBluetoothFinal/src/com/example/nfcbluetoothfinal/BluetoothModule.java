@@ -57,6 +57,10 @@ public class BluetoothModule {
 	public synchronized void processProtocol(byte[] bytes) {
 		session.processProtocol(bytes, this);
 	}
+	
+	public Handler getHandler() {
+		return this.handler;
+	}
 
 	/**
 	 * Returns the current bluetooth connection state
