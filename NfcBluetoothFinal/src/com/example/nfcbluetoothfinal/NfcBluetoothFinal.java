@@ -10,18 +10,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
 import com.example.nfcbluetoothfinal.BluetoothModule.BluetoothState;
 import com.example.nfcbluetoothfinal.util.BluetoothBroadcastReceiver;
-import com.example.nfcbluetoothfinal.util.BluetoothSession;
+import com.example.nfcbluetoothfinal.util.BluetoothSessionInfos;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcBluetoothFinal extends Activity {
-	private static final String TAG = "NfcBluetoothFinal";
-	
 	private BluetoothAdapter bluetoothAdapter = null;
 	private NfcAdapter nfcAdapter = null;
 	private BluetoothBroadcastReceiver broadcastReceiver = null;
@@ -121,6 +118,8 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public void onStop() {
 		super.onStop();
+		
+		//TODO jeton: call on destroy?
 	}
 	
 	@Override
@@ -154,7 +153,7 @@ public class NfcBluetoothFinal extends Activity {
             	initNfc();
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
-				BluetoothSession infos = (BluetoothSession) msg.obj;
+				BluetoothSessionInfos infos = (BluetoothSessionInfos) msg.obj;
 				bluetoothModule.setSessionInfos(infos);
 				bluetoothModule.connect();
 				break;
@@ -183,24 +182,21 @@ public class NfcBluetoothFinal extends Activity {
 				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_STATE_CHANGED:
-				//TODO jeton: now what?
 				switch ((BluetoothState) msg.obj) {
 				case STATE_NONE:
-					break;
 				case STATE_LISTENING:
-					break;
 				case STATE_CONNECTING:
 					break;
 				case STATE_CONNECTED:
+					//TODO jeton: start protocol!
+					bluetoothModule.processProtocol(null);
+					//TODO jeton: on fail or abort finish protocol!!
 					break;
 				}
 				break;
-			case Messages.BLUETOOTH_MESSAGE_RECEIVED:
-				//TODO jeton: now what?
-				break;
-			case Messages.BLUETOOTH_MESSAGE_SEND:
-				//TODO jeton: now what?
-				break;
+			case Messages.P2P_PROTOCOL_MESSAGE:
+				byte[] bytes = (byte[]) msg.obj;
+				bluetoothModule.processProtocol(bytes);
 			}
 		}
 

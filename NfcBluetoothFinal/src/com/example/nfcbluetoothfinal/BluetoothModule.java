@@ -1,5 +1,6 @@
 package com.example.nfcbluetoothfinal;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.example.nfcbluetoothfinal.util.BluetoothSession;
+import com.example.nfcbluetoothfinal.util.BluetoothSessionInfos;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class BluetoothModule {
@@ -25,7 +27,7 @@ public class BluetoothModule {
 	private ConnectThread connectThread;
 	private ConnectedThread connectedThread;
 	
-	private BluetoothSession sessionInfos;
+	private BluetoothSession session;
 	
 	public enum BluetoothState {
 		STATE_NONE, STATE_LISTENING, STATE_CONNECTING, STATE_CONNECTED
@@ -35,11 +37,25 @@ public class BluetoothModule {
 		this.adapter = adapter;
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
-		sessionInfos = new BluetoothSession();
+		
+		//TODO jeton: what if both are in same activity? both seller or both buyer?
+		
+		//TODO jeton: remove this
+		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
+			session = new BluetoothSession(true);
+			Log.i(TAG, "im the seller");
+		} else {
+			session = new BluetoothSession(false);
+			Log.i(TAG, "im the buyer");
+		}
 	}
 	
-	public synchronized void setSessionInfos(BluetoothSession infos) {
-		this.sessionInfos = infos;
+	public synchronized void setSessionInfos(BluetoothSessionInfos infos) {
+		session.setInfos(infos);
+	}
+	
+	public synchronized void processProtocol(byte[] bytes) {
+		session.processProtocol(bytes, this);
 	}
 
 	/**
@@ -112,7 +128,7 @@ public class BluetoothModule {
         }
 
         // Start the thread to connect with the given device
-        BluetoothDevice remoteDevice = adapter.getRemoteDevice(sessionInfos.getInitiatorDeviceAddress());
+        BluetoothDevice remoteDevice = adapter.getRemoteDevice(session.getSessionInfos().getInitiatorDeviceAddress());
         connectThread = new ConnectThread(remoteDevice);
         connectThread.start();
         setState(BluetoothState.STATE_CONNECTING);
@@ -208,7 +224,7 @@ public class BluetoothModule {
         public AcceptThread() {
             BluetoothServerSocket tmp = null;
             try {
-                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(sessionInfos.getServiceName(), sessionInfos.getServiceUUID());
+                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(session.getSessionInfos().getServiceName(), session.getSessionInfos().getServiceUUID());
             } catch (IOException e) {
             	Log.e(TAG, "listen() failed", e);
             }
@@ -275,7 +291,7 @@ public class BluetoothModule {
             BluetoothSocket tmp = null;
             
             try {
-                tmp = device.createInsecureRfcommSocketToServiceRecord(sessionInfos.getServiceUUID());
+                tmp = device.createInsecureRfcommSocketToServiceRecord(session.getSessionInfos().getServiceUUID());
             } catch (IOException e) { 
             	Log.e(TAG, "create() failed", e);
             }
@@ -348,7 +364,7 @@ public class BluetoothModule {
 		}
 
 		public void run() {
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[1024];//TODO jeton: pay attention to not exceed this!!
 			int bytes;
 
 			// Keep listening to the InputStream until an exception occurs
@@ -357,7 +373,12 @@ public class BluetoothModule {
 					// Read from the InputStream
 					bytes = inputStream.read(buffer);
 					// Send the obtained bytes to the UI activity
-					handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_RECEIVED, bytes).sendToTarget();
+					
+					//TODO jeton: is this ok?
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					baos.write(buffer, 0, bytes);
+					
+					handler.obtainMessage(Messages.P2P_PROTOCOL_MESSAGE, baos.toByteArray()).sendToTarget();
 				} catch (IOException e) {
 					Log.e(TAG, "disconnected", e);
 					handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_LOST).sendToTarget();
@@ -374,7 +395,7 @@ public class BluetoothModule {
 				outputStream.write(bytes);
 				
 				// Share the sent message back to the UI Activity
-                handler.obtainMessage(Messages.BLUETOOTH_MESSAGE_SEND, bytes).sendToTarget();
+                handler.obtainMessage(Messages.P2P_PROTOCOL_MESSAGE, bytes).sendToTarget();
 			} catch (IOException e) {
 				Log.e(TAG, "Exception during write", e);
 			}

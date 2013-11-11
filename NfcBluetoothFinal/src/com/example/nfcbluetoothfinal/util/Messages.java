@@ -12,13 +12,15 @@ public class Messages {
 	public static final int BLUETOOTH_ENABLED = 1;
 	public static final int NFC_INTENT_PROCESSED = 2;
 	public static final int NFC_PUSH_COMPLETE = 3;
-	public static final int BLUETOOTH_MESSAGE_RECEIVED = 4;
-	public static final int BLUETOOTH_MESSAGE_SEND = 5;
+	
 	public static final int BLUETOOTH_CONNECTION_LOST = 6;
 	public static final int BLUETOOTH_CONNECTION_FAILED = 7;
 	public static final int BLUETOOTH_STATE_CHANGED = 8;
 	public static final int BLUETOOTH_CONNECTION_ESTABLISHED = 9;
 	public static final int NFC_ERROR_PROCESSING_INFOS = 10;
 	public static final int BLUETOOTH_TURNED_OFF = 11;
+	
+	public static final int P2P_PROTOCOL_MESSAGE = 12;
+	
 	
 }
