@@ -29,6 +29,7 @@ public class NfcBluetoothFinal extends Activity {
 	
 	//TODO jeton: delete log outputs
 	//TODO jeton: catch connection lost exception when intended
+	//TODO jeton: what if both are in same activity? both seller or both buyer? include in protocol!
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -214,10 +215,9 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.P2P_PROTOCOL_MESSAGE:
 				byte[] bytes = (byte[]) msg.obj;
 				bluetoothModule.processProtocol(bytes);
-				//TODO jeton: handle timeouts (via connection lost
+				//TODO jeton: handle timeouts (via connection lost)
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
-				//TODO jeton: check if it works
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				disableBluetooth();

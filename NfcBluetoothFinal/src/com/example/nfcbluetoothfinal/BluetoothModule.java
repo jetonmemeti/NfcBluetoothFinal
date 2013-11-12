@@ -39,8 +39,6 @@ public class BluetoothModule {
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
 		
-		//TODO jeton: what if both are in same activity? both seller or both buyer?
-		
 		//TODO jeton: remove this
 		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
 			session = new BluetoothSession(true);
