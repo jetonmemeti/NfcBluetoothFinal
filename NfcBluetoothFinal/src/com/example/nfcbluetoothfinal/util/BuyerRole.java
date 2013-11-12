@@ -63,6 +63,7 @@ public class BuyerRole implements PaymentRole, Serializable {
 			break;
 		case STATE_END:
 			//do nothing
+			Log.i("BuyerRole", "STATE_END");
 			break;
 		}
 	}

@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
 
+import com.example.nfcbluetoothfinal.util.BluetoothMessage;
 import com.example.nfcbluetoothfinal.util.BluetoothSession;
 import com.example.nfcbluetoothfinal.util.BluetoothSessionInfos;
 import com.example.nfcbluetoothfinal.util.Messages;
@@ -368,7 +369,7 @@ public class BluetoothModule {
 		}
 
 		public void run() {
-			byte[] buffer = new byte[1024];//TODO jeton: pay attention to not exceed this!!
+			byte[] buffer = new byte[BluetoothMessage.MAX_MSG_SIZE];
 			int bytes;
 
 			// Keep listening to the InputStream until an exception occurs
@@ -378,7 +379,6 @@ public class BluetoothModule {
 					bytes = inputStream.read(buffer);
 					// Send the obtained bytes to the UI activity
 					
-					//TODO jeton: is this ok?
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					baos.write(buffer, 0, bytes);
 					
@@ -394,7 +394,7 @@ public class BluetoothModule {
 		/**
 		 * Call this from the main activity to send data to the remote device
 		 */
-		public void write(byte[] bytes) {
+		public void write(byte[] bytes) {//TODO jeton: pay attention to not exceed BluetoothMessage.MAX_MSG_SIZE
 			try {
 				outputStream.write(bytes);
 				

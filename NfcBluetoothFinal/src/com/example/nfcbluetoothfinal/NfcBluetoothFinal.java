@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -32,6 +33,8 @@ public class NfcBluetoothFinal extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		Log.e("NfcBluetoothFinal", "ON CREATE");
+		
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (bluetoothAdapter == null) {
 			Toast.makeText(this, Messages.ERROR_NO_BLUETOOTH, Toast.LENGTH_LONG).show();
@@ -50,6 +53,8 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
+		
+		Log.e("NfcBluetoothFinal", "ON START");
 		
 		if (!nfcAdapter.isEnabled()) {
 			//prompt dialog to enable nfc
@@ -90,6 +95,8 @@ public class NfcBluetoothFinal extends Activity {
 	public synchronized void onResume() {
 		super.onResume();
 		
+		Log.e("NfcBluetoothFinal", "ON RESUME");
+		
 		if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
 			if (nfcModule != null)
 				nfcModule.processNfcIntent(getIntent());
@@ -113,12 +120,15 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public synchronized void onPause() {
 		super.onPause();
+		Log.e("NfcBluetoothFinal", "ON PAUSE");
 	}
 	
 	@Override
 	public void onStop() {
 		super.onStop();
 		
+		Log.e("NfcBluetoothFinal", "ON STOP");
+//		finish();
 		//TODO jeton: call on destroy?
 	}
 	
@@ -126,6 +136,7 @@ public class NfcBluetoothFinal extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		
+		Log.e("NfcBluetoothFinal", "ON DESTROY");
 		unregisterBroadcastReceiver();
 		stopBluetoothModule();
 		disableBluetooth();
@@ -197,9 +208,10 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.P2P_PROTOCOL_MESSAGE:
 				byte[] bytes = (byte[]) msg.obj;
 				bluetoothModule.processProtocol(bytes);
+				//TODO jeton: handle timeouts (via connection lost
+				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
 				//TODO jeton: check if it works
-				//TODO jeton: assure that both finish at same time!!! do I need a further state and communication?
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				disableBluetooth();
