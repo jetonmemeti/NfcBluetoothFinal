@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -27,16 +26,14 @@ public class NfcBluetoothFinal extends Activity {
 	private BluetoothModule bluetoothModule = null;
 	private NfcModule nfcModule = null;
 	
-	//TODO jeton: delete log outputs
 	//TODO jeton: catch connection lost exception when intended
 	//TODO jeton: what if both are in same activity? both seller or both buyer? include in protocol!
+	//TODO jeton: register/unregister onPause needed? rethink!
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		Log.e("NfcBluetoothFinal", "ON CREATE");
 		
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (bluetoothAdapter == null) {
@@ -56,8 +53,6 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public void onStart() {
 		super.onStart();
-		
-		Log.e("NfcBluetoothFinal", "ON START");
 		
 		if (!nfcAdapter.isEnabled()) {
 			//prompt dialog to enable nfc
@@ -100,8 +95,6 @@ public class NfcBluetoothFinal extends Activity {
 	public synchronized void onResume() {
 		super.onResume();
 		
-		Log.e("NfcBluetoothFinal", "ON RESUME");
-		
 		registerBroadcastReceiver(handler);
 		
 		if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
@@ -127,7 +120,6 @@ public class NfcBluetoothFinal extends Activity {
 	@Override
 	public synchronized void onPause() {
 		super.onPause();
-		Log.e("NfcBluetoothFinal", "ON PAUSE");
 		unregisterBroadcastReceiver();
 	}
 	
@@ -135,7 +127,6 @@ public class NfcBluetoothFinal extends Activity {
 	public void onStop() {
 		super.onStop();
 		
-		Log.e("NfcBluetoothFinal", "ON STOP");
 		//TODO jeton: call on destroy?
 	}
 	
@@ -143,7 +134,6 @@ public class NfcBluetoothFinal extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		Log.e("NfcBluetoothFinal", "ON DESTROY");
 		unregisterBroadcastReceiver();
 		stopBluetoothModule();
 		disableBluetooth();
