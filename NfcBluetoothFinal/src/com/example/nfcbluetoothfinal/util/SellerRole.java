@@ -58,10 +58,10 @@ public class SellerRole implements PaymentRole, Serializable {
 			
 			bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_FINISHED).sendToTarget();
 			state = State.STATE_END;
+			Log.i("SellerRole", "STATE_END");
 			break;
 		case STATE_END:
-			Log.i("SellerRole", "STATE_END");
-			//do nothing
+			//do nothing, since never entered
 			break;
 		}
 	}
