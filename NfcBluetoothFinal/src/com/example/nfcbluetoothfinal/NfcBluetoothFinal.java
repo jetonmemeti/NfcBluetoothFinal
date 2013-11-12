@@ -23,10 +23,12 @@ public class NfcBluetoothFinal extends Activity {
 	private BluetoothAdapter bluetoothAdapter = null;
 	private NfcAdapter nfcAdapter = null;
 	private BluetoothBroadcastReceiver broadcastReceiver = null;
-	private boolean broadcastReceiverRegistered = false;
 	
 	private BluetoothModule bluetoothModule = null;
 	private NfcModule nfcModule = null;
+	
+	//TODO jeton: delete log outputs
+	//TODO jeton: catch connection lost exception when intended
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -72,15 +74,17 @@ public class NfcBluetoothFinal extends Activity {
 	}
 	
 	private void registerBroadcastReceiver(Handler handler) {
-		IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-		broadcastReceiver = new BluetoothBroadcastReceiver(handler);
-		this.registerReceiver(broadcastReceiver, filter);
-		broadcastReceiverRegistered = true;
+		if (broadcastReceiver == null) {
+			IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+			broadcastReceiver = new BluetoothBroadcastReceiver(handler);
+			this.registerReceiver(broadcastReceiver, filter);
+		}
     }
 	
 	private void unregisterBroadcastReceiver() {
-		if (broadcastReceiverRegistered) {
+		if (broadcastReceiver != null) {
 			this.unregisterReceiver(broadcastReceiver);
+			broadcastReceiver = null;
 		}
 	}	
 	private void initBluetooth() {
@@ -96,6 +100,8 @@ public class NfcBluetoothFinal extends Activity {
 		super.onResume();
 		
 		Log.e("NfcBluetoothFinal", "ON RESUME");
+		
+		registerBroadcastReceiver(handler);
 		
 		if (getIntent().getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
 			if (nfcModule != null)
@@ -121,6 +127,7 @@ public class NfcBluetoothFinal extends Activity {
 	public synchronized void onPause() {
 		super.onPause();
 		Log.e("NfcBluetoothFinal", "ON PAUSE");
+		unregisterBroadcastReceiver();
 	}
 	
 	@Override
@@ -128,7 +135,6 @@ public class NfcBluetoothFinal extends Activity {
 		super.onStop();
 		
 		Log.e("NfcBluetoothFinal", "ON STOP");
-//		finish();
 		//TODO jeton: call on destroy?
 	}
 	
