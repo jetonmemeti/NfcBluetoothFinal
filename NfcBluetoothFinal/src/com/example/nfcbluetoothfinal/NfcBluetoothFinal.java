@@ -162,12 +162,13 @@ public class NfcBluetoothFinal extends Activity {
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				BluetoothSessionInfos infos = (BluetoothSessionInfos) msg.obj;
-				bluetoothModule.setSessionInfos(infos);
+				bluetoothModule.createSession(infos);
 				bluetoothModule.connect();
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
 				Boolean success = (Boolean) msg.obj;
 				if (success) {
+					bluetoothModule.createSession(null);
 					startListeningBluetooth();
 					break;
 				}
@@ -186,7 +187,10 @@ public class NfcBluetoothFinal extends Activity {
 				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_LOST:
-				Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_LOST, Toast.LENGTH_LONG).show();
+				if (!bluetoothModule.isSessionFinished()) {
+					bluetoothModule.resetSession();
+					Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_LOST, Toast.LENGTH_LONG).show();
+				}
 				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_STATE_CHANGED:
@@ -197,7 +201,6 @@ public class NfcBluetoothFinal extends Activity {
 					break;
 				case STATE_CONNECTED:
 					bluetoothModule.processProtocol(null);
-					//TODO jeton: on fail or abort finish protocol!!
 					break;
 				}
 				break;
@@ -208,9 +211,9 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
 				Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
-				bluetoothModule.resetPaymentState();
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
+				bluetoothModule.setSessionFinished();
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				disableBluetooth();

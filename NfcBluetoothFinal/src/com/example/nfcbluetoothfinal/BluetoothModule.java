@@ -37,34 +37,45 @@ public class BluetoothModule {
 	public BluetoothModule(BluetoothAdapter adapter, Handler handler) {
 		this.adapter = adapter;
 		this.handler = handler;
+		createSession(null);
 		state = BluetoothState.STATE_NONE;
-		
-		//TODO jeton: remove this (LG device)
+	}
+	
+	public synchronized void processProtocol(byte[] bytes) {
+		session.process(bytes, this);
+	}
+	
+	public synchronized void resetSession() {
+		session.reset();
+	}
+	
+	public synchronized void createSession(BluetoothSessionInfos infos) {
+		//TODO jeton: remove this
 		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
+			// LG device
 			session = new BluetoothSession(true);
 			Log.i(TAG, "im the seller");
 		} else {
 			session = new BluetoothSession(false);
 			Log.i(TAG, "im the buyer");
 		}
+		
+		if (infos != null)
+			session.setInfos(infos);
 	}
 	
-	public synchronized void setSessionInfos(BluetoothSessionInfos infos) {
-		session.setInfos(infos);
+	public synchronized void setSessionFinished() {
+		session.setFinished();
 	}
 	
-	public synchronized void processProtocol(byte[] bytes) {
-		session.getPaymentRole().process(bytes, this);
-	}
-	
-	public void resetPaymentState() {
-		session.getPaymentRole().reset();
+	public boolean isSessionFinished() {
+		return session.isFinished();
 	}
 	
 	public Handler getHandler() {
 		return this.handler;
 	}
-
+	
 	/**
 	 * Returns the current bluetooth connection state
 	 * 
@@ -87,7 +98,7 @@ public class BluetoothModule {
         // Give the new state to the Handler so the UI Activity can update
         handler.obtainMessage(Messages.BLUETOOTH_STATE_CHANGED, state).sendToTarget();
 	}
-
+	
 	/**
 	 * Start listening for incoming bluetooth connections.
 	 */

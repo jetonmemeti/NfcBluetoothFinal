@@ -1,28 +1,42 @@
 package com.example.nfcbluetoothfinal.util;
 
+import com.example.nfcbluetoothfinal.BluetoothModule;
+
 
 //TODO jeton: add crypto things here
 public class BluetoothSession {
-	private BluetoothSessionInfos infos = new BluetoothSessionInfos();
+	private BluetoothSessionInfos infos;
 	private PaymentRole role;
+	private boolean finished = false;
 	
 	public BluetoothSession(boolean asSeller) {
-		if (asSeller)
-			role = new SellerRole();
-		else
-			role = new BuyerRole();
+		infos = new BluetoothSessionInfos();
+		role = (asSeller) ? new SellerRole() : new BuyerRole();
 	}
 	
 	public BluetoothSessionInfos getSessionInfos() {
 		return infos;
 	}
 	
-	public PaymentRole getPaymentRole() {
-		return role;
-	}
-
 	public void setInfos(BluetoothSessionInfos infos) {
 		this.infos = infos;
+	}
+	
+	public void setFinished() {
+		finished = true;
+		role.reset();
+	}
+	
+	public boolean isFinished() {
+		return finished;
+	}
+
+	public void process(byte[] bytes, BluetoothModule bluetoothModule) {
+		role.process(bytes, bluetoothModule);
+	}
+
+	public void reset() {
+		role.reset();
 	}
 
 }
