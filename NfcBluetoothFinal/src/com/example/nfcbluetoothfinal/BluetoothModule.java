@@ -54,7 +54,11 @@ public class BluetoothModule {
 	}
 	
 	public synchronized void processProtocol(byte[] bytes) {
-		session.processProtocol(bytes, this);
+		session.getPaymentRole().process(bytes, this);
+	}
+	
+	public void resetPaymentState() {
+		session.getPaymentRole().reset();
 	}
 	
 	public Handler getHandler() {

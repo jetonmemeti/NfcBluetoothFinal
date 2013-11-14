@@ -95,4 +95,9 @@ public class BuyerRole implements PaymentRole, Serializable {
 		}
 	}
 
+	@Override
+	public void reset() {
+		state = State.STATE_START;
+	}
+
 }

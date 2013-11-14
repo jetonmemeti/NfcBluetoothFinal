@@ -1,6 +1,5 @@
 package com.example.nfcbluetoothfinal.util;
 
-import com.example.nfcbluetoothfinal.BluetoothModule;
 
 //TODO jeton: add crypto things here
 public class BluetoothSession {
@@ -17,13 +16,13 @@ public class BluetoothSession {
 	public BluetoothSessionInfos getSessionInfos() {
 		return infos;
 	}
-
-	public void processProtocol(byte[] bytes, BluetoothModule bluetoothModule) {
-		role.process(bytes, bluetoothModule);
-	}
 	
+	public PaymentRole getPaymentRole() {
+		return role;
+	}
+
 	public void setInfos(BluetoothSessionInfos infos) {
 		this.infos = infos;
 	}
-	
+
 }

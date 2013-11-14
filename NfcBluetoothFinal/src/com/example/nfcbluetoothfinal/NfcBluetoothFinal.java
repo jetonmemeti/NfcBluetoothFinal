@@ -208,6 +208,8 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
 				Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
+				bluetoothModule.resetPaymentState();
+				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
