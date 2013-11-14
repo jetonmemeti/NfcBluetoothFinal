@@ -27,7 +27,6 @@ public class NfcBluetoothFinal extends Activity {
 	private NfcModule nfcModule = null;
 	
 	//TODO jeton: catch connection lost exception when intended
-	//TODO jeton: what if both are in same activity? both seller or both buyer? include in protocol!
 	//TODO jeton: register/unregister onPause needed? rethink!
 	
 	@Override
@@ -207,6 +206,8 @@ public class NfcBluetoothFinal extends Activity {
 				bluetoothModule.processProtocol(bytes);
 				//TODO jeton: handle timeouts (via connection lost)
 				break;
+			case Messages.P2P_PROTOCOL_ERROR:
+				Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
 			case Messages.P2P_PROTOCOL_FINISHED:
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();

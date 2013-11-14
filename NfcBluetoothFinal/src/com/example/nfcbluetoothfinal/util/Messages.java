@@ -8,6 +8,7 @@ public class Messages {
 	public static final String ERROR_NO_NFC = "Your device does not support nfc. Turning off.";
 	public static final String ERROR_NFC = "NFC error occured. Please try again by holding devices together.";
 	public static final String ACTIVATE_NFC = "Please activate NFC and press Back to return to the application!";
+	public static final String ERROR_P2P_PROTOCOL_SAME_ROLE = "Both clients are in the same activity. Seller and buyer need to open the appropriate views.";
 	
 	public static final int BLUETOOTH_ENABLED = 1;
 	public static final int NFC_INTENT_PROCESSED = 2;
@@ -22,6 +23,6 @@ public class Messages {
 	
 	public static final int P2P_PROTOCOL_MESSAGE = 12;
 	public static final int P2P_PROTOCOL_FINISHED = 13;
-	
+	public static final int P2P_PROTOCOL_ERROR = 14;
 	
 }

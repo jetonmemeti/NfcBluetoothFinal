@@ -39,7 +39,7 @@ public class BluetoothModule {
 		this.handler = handler;
 		state = BluetoothState.STATE_NONE;
 		
-		//TODO jeton: remove this
+		//TODO jeton: remove this (LG device)
 		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
 			session = new BluetoothSession(true);
 			Log.i(TAG, "im the seller");

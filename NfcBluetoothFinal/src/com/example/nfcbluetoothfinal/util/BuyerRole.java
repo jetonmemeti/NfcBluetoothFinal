@@ -9,8 +9,14 @@ import com.example.nfcbluetoothfinal.BluetoothModule;
 public class BuyerRole implements PaymentRole, Serializable {
 	private static final long serialVersionUID = -6308811188885952621L;
 
+	private static final String ROLE_TEXT = "buyer";
+	
+	private static final String TAG = "BuyerRole";
+	
 	private enum State {
 		STATE_START,
+		STATE_WAIT_FOR_PAYMENT_ROLE,
+		STATE_PAYMENT_ROLE_SENT,
 		STATE_WAIT_FOR_PAYMENT_REQUEST,
 		STATE_PAYMENT_CONFIRMATION_SENT,
 		STATE_WAIT_FOR_TRANSACTION_CONFIRMATION,
@@ -24,17 +30,38 @@ public class BuyerRole implements PaymentRole, Serializable {
 		this.state = State.STATE_START;
 	}
 	
+	public static String getRoleID() {
+		return ROLE_TEXT;
+	}
+	
 	@Override
 	public synchronized void process(byte[] bytes, BluetoothModule bluetoothModule) {
 		String s;
 		switch (state) {
 		case STATE_START:
-			Log.i("BuyerRole", "STATE_START");
+			Log.i(TAG, "STATE_START: " + ROLE_TEXT);
+			state = State.STATE_WAIT_FOR_PAYMENT_ROLE;
+			break;
+		case STATE_WAIT_FOR_PAYMENT_ROLE:
+			s = new String(bytes);
+			Log.i(TAG, "STATE_WAIT_FOR_PAYMENT_ROLE: " + s);
+			if (s.equals(SellerRole.getRoleID())) {
+				bluetoothModule.write(ROLE_TEXT.getBytes());
+				state = State.STATE_PAYMENT_ROLE_SENT;
+			} else {
+				//both are in the same role or other error occured
+				bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_ERROR);
+				state = State.STATE_END;
+			}
+			break;
+		case STATE_PAYMENT_ROLE_SENT:
+			s = new String(bytes);
+			Log.i(TAG, "STATE_PAYMENT_ROLE_SENT: " + s);
 			state = State.STATE_WAIT_FOR_PAYMENT_REQUEST;
 			break;
 		case STATE_WAIT_FOR_PAYMENT_REQUEST:
 			s = new String(bytes);
-			Log.i("BuyerRole", "STATE_WAIT_FOR_PAYMENT_REQUEST: " + s);
+			Log.i(TAG, "STATE_WAIT_FOR_PAYMENT_REQUEST: " + s);
 			
 			s = "confirmPayment(Cb=Eprb(SA;BA;BtcA;TNrs;TNrb), BA)";
 			bluetoothModule.write(s.getBytes());
@@ -43,12 +70,12 @@ public class BuyerRole implements PaymentRole, Serializable {
 		case STATE_PAYMENT_CONFIRMATION_SENT:
 			// wait for transaction confirmation
 			s = new String(bytes);
-			Log.i("BuyerRole", "STATE_PAYMENT_CONFIRMATION_SENT: " + s);
+			Log.i(TAG, "STATE_PAYMENT_CONFIRMATION_SENT: " + s);
 			state = State.STATE_WAIT_FOR_TRANSACTION_CONFIRMATION;
 			break;
 		case STATE_WAIT_FOR_TRANSACTION_CONFIRMATION:
 			s = new String(bytes);
-			Log.i("BuyerRole", "STATE_WAIT_FOR_TRANSACTION_CONFIRMATION: " + s);
+			Log.i(TAG, "STATE_WAIT_FOR_TRANSACTION_CONFIRMATION: " + s);
 			
 			s = "ackTransaction()";
 			bluetoothModule.write(s.getBytes());
@@ -56,11 +83,11 @@ public class BuyerRole implements PaymentRole, Serializable {
 			break;
 		case STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT:
 			s = new String(bytes);
-			Log.i("BuyerRole", "STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT: " + s);
+			Log.i(TAG, "STATE_TRANSACTION_ACKNOWLEDGEMENT_SENT: " + s);
 			
 			bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_FINISHED).sendToTarget();
 			state = State.STATE_END;
-			Log.i("BuyerRole", "STATE_END");
+			Log.i(TAG, "STATE_END");
 			break;
 		case STATE_END:
 			//do nothing, since never entered
