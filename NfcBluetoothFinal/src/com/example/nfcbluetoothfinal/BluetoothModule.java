@@ -411,6 +411,7 @@ public class BluetoothModule {
 		 */
 		public void write(byte[] bytes) {
 			if (bytes.length > BluetoothMessage.MAX_MSG_SIZE) {
+				Log.e(TAG, "Message too large!!");
 				handler.obtainMessage(Messages.P2P_PROTOCOL_ERROR, Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE, 0).sendToTarget();
 			} else {
 				try {

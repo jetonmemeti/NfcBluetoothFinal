@@ -210,13 +210,10 @@ public class NfcBluetoothFinal extends Activity {
 			case Messages.P2P_PROTOCOL_MESSAGE:
 				byte[] bytes = (byte[]) msg.obj;
 				bluetoothModule.proceedProtocol(bytes);
-				//TODO jeton: handle timeouts (via connection lost)
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
 				switch (msg.arg1) {
 				case Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE:
-					Log.e(TAG, "bluetooth message to large to send");
-					//TODO jeton: tell other device to shut down connection too!
 					stopBluetoothModule();
 					break;
 				case Messages.P2P_PROTOCOL_ERROR_SAME_ROLE:
