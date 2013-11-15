@@ -24,11 +24,11 @@ public class BluetoothSessionInfos implements Serializable {
 		this.initiatorDeviceName = initiatorDeviceName;
 	}
 	
-	public UUID getServiceUUID() {
+	public static UUID getServiceUUID() {
 		return SERVICE_UUID;
 	}
 	
-	public String getServiceName() {
+	public static String getServiceName() {
 		return SERVICE_NAME;
 	}
 	

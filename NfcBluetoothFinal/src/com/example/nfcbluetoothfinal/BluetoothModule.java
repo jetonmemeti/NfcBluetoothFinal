@@ -144,6 +144,8 @@ public class BluetoothModule {
         	connectedThread.cancel();
         	connectedThread = null;
         }
+        
+        createSession(infos);
 
         // Start the thread to connect with the given device
         BluetoothDevice remoteDevice = adapter.getRemoteDevice(session.getSessionInfos().getInitiatorDeviceAddress());
@@ -244,7 +246,7 @@ public class BluetoothModule {
         public AcceptThread() {
             BluetoothServerSocket tmp = null;
             try {
-                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(session.getSessionInfos().getServiceName(), session.getSessionInfos().getServiceUUID());
+                tmp = adapter.listenUsingInsecureRfcommWithServiceRecord(BluetoothSessionInfos.getServiceName(), BluetoothSessionInfos.getServiceUUID());
             } catch (IOException e) {
             	Log.e(TAG, "listen() failed", e);
             }
@@ -311,7 +313,7 @@ public class BluetoothModule {
             BluetoothSocket tmp = null;
             
             try {
-                tmp = device.createInsecureRfcommSocketToServiceRecord(session.getSessionInfos().getServiceUUID());
+                tmp = device.createInsecureRfcommSocketToServiceRecord(BluetoothSessionInfos.getServiceUUID());
             } catch (IOException e) { 
             	Log.e(TAG, "create() failed", e);
             }
@@ -410,10 +412,9 @@ public class BluetoothModule {
 		 * Call this from the main activity to send data to the remote device
 		 */
 		public void write(byte[] bytes) {
-			//TODO jeton: pay attention to not exceed BluetoothMessage.MAX_MSG_SIZE
 			//TODO jeton: test!
 			if (bytes.length > BluetoothMessage.MAX_MSG_SIZE) {
-				handler.obtainMessage(Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE).sendToTarget();
+				handler.obtainMessage(Messages.P2P_PROTOCOL_ERROR, Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE, 0).sendToTarget();
 			} else {
 				try {
 					outputStream.write(bytes);

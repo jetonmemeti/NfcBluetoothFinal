@@ -211,18 +211,23 @@ public class NfcBluetoothFinal extends Activity {
 				//TODO jeton: handle timeouts (via connection lost)
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
-				Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
-				stopBluetoothModule();
+				switch (msg.arg1) {
+				case Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE:
+					Log.e(TAG, "bluetooth message to large to send");
+					//TODO jeton: tell other device to shut down connection too!
+					stopBluetoothModule();
+					break;
+				case Messages.P2P_PROTOCOL_ERROR_SAME_ROLE:
+					Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
+					stopBluetoothModule();
+					break;
+				}
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
 				bluetoothModule.setSessionFinished();
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				disableBluetooth();
-				break;
-			case Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE:
-				Log.e(TAG, "bluetooth message to large to send");
-				stopBluetoothModule();
 				break;
 			}
 		}

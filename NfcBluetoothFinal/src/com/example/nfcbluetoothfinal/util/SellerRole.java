@@ -57,7 +57,7 @@ public class SellerRole implements PaymentRole, Serializable {
 				state = State.STATE_PAYMENT_REQUEST_SENT;
 			} else {
 				//both are in the same role or other error occured
-				bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_ERROR);
+				bluetoothModule.getHandler().obtainMessage(Messages.P2P_PROTOCOL_ERROR, Messages.P2P_PROTOCOL_ERROR_SAME_ROLE, 0);
 				state = State.STATE_END;
 			}
 			break;
