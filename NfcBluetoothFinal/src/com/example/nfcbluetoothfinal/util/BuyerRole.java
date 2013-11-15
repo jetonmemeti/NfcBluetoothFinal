@@ -36,7 +36,7 @@ public class BuyerRole implements PaymentRole, Serializable {
 	
 	//TODO jeton: delete log output
 	@Override
-	public synchronized void process(byte[] bytes, BluetoothModule bluetoothModule) {
+	public synchronized void proceed(byte[] bytes, BluetoothModule bluetoothModule) {
 		String s;
 		switch (state) {
 		case STATE_START:

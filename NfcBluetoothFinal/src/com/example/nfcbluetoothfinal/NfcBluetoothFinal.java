@@ -203,13 +203,13 @@ public class NfcBluetoothFinal extends Activity {
 				case STATE_CONNECTING:
 					break;
 				case STATE_CONNECTED:
-					bluetoothModule.processProtocol(null);
+					bluetoothModule.proceedProtocol(null);
 					break;
 				}
 				break;
 			case Messages.P2P_PROTOCOL_MESSAGE:
 				byte[] bytes = (byte[]) msg.obj;
-				bluetoothModule.processProtocol(bytes);
+				bluetoothModule.proceedProtocol(bytes);
 				//TODO jeton: handle timeouts (via connection lost)
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
@@ -227,7 +227,6 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
 				bluetoothModule.setConnectionAbortedIntentionally(true);
-				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				break;
 			}

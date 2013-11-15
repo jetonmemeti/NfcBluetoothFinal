@@ -43,8 +43,8 @@ public class BluetoothModule {
 		state = BluetoothState.STATE_NONE;
 	}
 	
-	public synchronized void processProtocol(byte[] bytes) {
-		session.process(bytes, this);
+	public synchronized void proceedProtocol(byte[] bytes) {
+		session.proceed(bytes, this);
 	}
 	
 	private synchronized void createSession(BluetoothSessionInfos infos) {
@@ -410,7 +410,6 @@ public class BluetoothModule {
 		 * Call this from the main activity to send data to the remote device
 		 */
 		public void write(byte[] bytes) {
-			//TODO jeton: test!
 			if (bytes.length > BluetoothMessage.MAX_MSG_SIZE) {
 				handler.obtainMessage(Messages.P2P_PROTOCOL_ERROR, Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE, 0).sendToTarget();
 			} else {

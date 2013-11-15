@@ -21,8 +21,8 @@ public class BluetoothSession {
 		this.infos = infos;
 	}
 	
-	public void process(byte[] bytes, BluetoothModule bluetoothModule) {
-		role.process(bytes, bluetoothModule);
+	public void proceed(byte[] bytes, BluetoothModule bluetoothModule) {
+		role.proceed(bytes, bluetoothModule);
 	}
 
 }
