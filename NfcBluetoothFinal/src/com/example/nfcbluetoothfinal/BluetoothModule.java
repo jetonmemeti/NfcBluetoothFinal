@@ -45,11 +45,7 @@ public class BluetoothModule {
 		session.process(bytes, this);
 	}
 	
-	public synchronized void resetSession() {
-		session.reset();
-	}
-	
-	public synchronized void createSession(BluetoothSessionInfos infos) {
+	private synchronized void createSession(BluetoothSessionInfos infos) {
 		//TODO jeton: remove this
 		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
 			// LG device
@@ -69,7 +65,10 @@ public class BluetoothModule {
 	}
 	
 	public boolean isSessionFinished() {
-		return session.isFinished();
+		if (session == null)
+			return false;
+		else
+			return session.isFinished();
 	}
 	
 	public Handler getHandler() {
@@ -127,10 +126,11 @@ public class BluetoothModule {
 	/**
 	 * Start the ConnectThread to initiate a connection to a remote device.
 	 * 
-	 * @param device
-	 *            The BluetoothDevice to connect
+	 * @param infos
+	 *            The session infos object containing e.g. initiator mac
+	 *            address. Infos may not be null!
 	 */
-	public synchronized void connect() {
+	public synchronized void connect(BluetoothSessionInfos infos) {
         // Cancel any thread attempting to make a connection
         if (state == BluetoothState.STATE_CONNECTING) {
             if (connectThread != null) {
@@ -206,6 +206,8 @@ public class BluetoothModule {
             acceptThread.cancel();
             acceptThread = null;
         }
+        
+        createSession(null);
 
         setState(BluetoothState.STATE_NONE);
 	}
@@ -407,14 +409,20 @@ public class BluetoothModule {
 		/**
 		 * Call this from the main activity to send data to the remote device
 		 */
-		public void write(byte[] bytes) {//TODO jeton: pay attention to not exceed BluetoothMessage.MAX_MSG_SIZE
-			try {
-				outputStream.write(bytes);
-				
-				// Share the sent message back to the UI Activity
-                handler.obtainMessage(Messages.P2P_PROTOCOL_MESSAGE, bytes).sendToTarget();
-			} catch (IOException e) {
-				Log.e(TAG, "Exception during write", e);
+		public void write(byte[] bytes) {
+			//TODO jeton: pay attention to not exceed BluetoothMessage.MAX_MSG_SIZE
+			//TODO jeton: test!
+			if (bytes.length > BluetoothMessage.MAX_MSG_SIZE) {
+				handler.obtainMessage(Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE).sendToTarget();
+			} else {
+				try {
+					outputStream.write(bytes);
+					
+					// Share the sent message back to the UI Activity
+					handler.obtainMessage(Messages.P2P_PROTOCOL_MESSAGE, bytes).sendToTarget();
+				} catch (IOException e) {
+					Log.e(TAG, "Exception during write", e);
+				}
 			}
 		}
 

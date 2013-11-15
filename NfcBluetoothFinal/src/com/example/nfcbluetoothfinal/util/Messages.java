@@ -24,5 +24,6 @@ public class Messages {
 	public static final int P2P_PROTOCOL_MESSAGE = 12;
 	public static final int P2P_PROTOCOL_FINISHED = 13;
 	public static final int P2P_PROTOCOL_ERROR = 14;
+	public static final int P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE = 15;
 	
 }

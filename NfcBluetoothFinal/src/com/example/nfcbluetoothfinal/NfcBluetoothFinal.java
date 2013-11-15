@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ import com.example.nfcbluetoothfinal.util.BluetoothSessionInfos;
 import com.example.nfcbluetoothfinal.util.Messages;
 
 public class NfcBluetoothFinal extends Activity {
+	private static final String TAG = "NfcBluetoothFinal";
+	
 	private BluetoothAdapter bluetoothAdapter = null;
 	private NfcAdapter nfcAdapter = null;
 	private BluetoothBroadcastReceiver broadcastReceiver = null;
@@ -162,18 +165,17 @@ public class NfcBluetoothFinal extends Activity {
             	break;
 			case Messages.NFC_INTENT_PROCESSED:
 				BluetoothSessionInfos infos = (BluetoothSessionInfos) msg.obj;
-				bluetoothModule.createSession(infos);
-				bluetoothModule.connect();
+				bluetoothModule.connect(infos);
 				break;
 			case Messages.NFC_PUSH_COMPLETE:
 				Boolean success = (Boolean) msg.obj;
 				if (success) {
-					bluetoothModule.createSession(null);
 					startListeningBluetooth();
 					break;
 				}
 			case Messages.NFC_ERROR_PROCESSING_INFOS:
 				Toast.makeText(getApplicationContext(), Messages.ERROR_NFC, Toast.LENGTH_LONG).show();
+				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_ESTABLISHED:
 				//actually no need to do anything
@@ -188,7 +190,6 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			case Messages.BLUETOOTH_CONNECTION_LOST:
 				if (!bluetoothModule.isSessionFinished()) {
-					bluetoothModule.resetSession();
 					Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_LOST, Toast.LENGTH_LONG).show();
 				}
 				stopBluetoothModule();
@@ -211,12 +212,17 @@ public class NfcBluetoothFinal extends Activity {
 				break;
 			case Messages.P2P_PROTOCOL_ERROR:
 				Toast.makeText(getApplicationContext(), Messages.ERROR_P2P_PROTOCOL_SAME_ROLE, Toast.LENGTH_LONG).show();
+				stopBluetoothModule();
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
 				bluetoothModule.setSessionFinished();
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
 				disableBluetooth();
+				break;
+			case Messages.P2P_PROTOCOL_ERROR_MESSAGE_TOO_LARGE:
+				Log.e(TAG, "bluetooth message to large to send");
+				stopBluetoothModule();
 				break;
 			}
 		}

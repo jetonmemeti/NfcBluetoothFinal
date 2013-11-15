@@ -24,7 +24,6 @@ public class BluetoothSession {
 	
 	public void setFinished() {
 		finished = true;
-		role.reset();
 	}
 	
 	public boolean isFinished() {
@@ -33,10 +32,6 @@ public class BluetoothSession {
 
 	public void process(byte[] bytes, BluetoothModule bluetoothModule) {
 		role.process(bytes, bluetoothModule);
-	}
-
-	public void reset() {
-		role.reset();
 	}
 
 }
