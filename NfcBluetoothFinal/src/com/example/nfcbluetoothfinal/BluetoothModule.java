@@ -39,7 +39,6 @@ public class BluetoothModule {
 	public BluetoothModule(BluetoothAdapter adapter, Handler handler) {
 		this.adapter = adapter;
 		this.handler = handler;
-		createSession(null);
 		state = BluetoothState.STATE_NONE;
 	}
 	
@@ -47,7 +46,7 @@ public class BluetoothModule {
 		session.proceed(bytes, this);
 	}
 	
-	private synchronized void createSession(BluetoothSessionInfos infos) {
+	private synchronized void createSession() {
 		//TODO jeton: remove this
 		if (adapter.getAddress().equals("98:D6:F7:D2:9F:02")) {
 			// LG device
@@ -57,9 +56,6 @@ public class BluetoothModule {
 			session = new BluetoothSession(false);
 			Log.i(TAG, "im the buyer");
 		}
-		
-		if (infos != null)
-			session.setInfos(infos);
 	}
 	
 	public boolean isConnectionAbortedIntentionally() {
@@ -114,6 +110,8 @@ public class BluetoothModule {
         }
 
         setState(BluetoothState.STATE_LISTENING);
+        
+        createSession();
 
         // Start the thread to listen on a BluetoothServerSocket
         if (acceptThread == null) {
@@ -144,6 +142,7 @@ public class BluetoothModule {
         	connectedThread = null;
         }
         
+        createSession();
         session.setInfos(infos);
 
         // Start the thread to connect with the given device
@@ -208,7 +207,7 @@ public class BluetoothModule {
             acceptThread = null;
         }
         
-        createSession(null);//TODO jeton: rethink!!
+        session = null;
 
         setState(BluetoothState.STATE_NONE);
 	}
