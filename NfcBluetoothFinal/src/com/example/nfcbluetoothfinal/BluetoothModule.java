@@ -30,6 +30,8 @@ public class BluetoothModule {
 	
 	private BluetoothSession session;
 	
+	private boolean connectionAbortedIntentionally = false;
+	
 	public enum BluetoothState {
 		STATE_NONE, STATE_LISTENING, STATE_CONNECTING, STATE_CONNECTED
 	}
@@ -60,15 +62,12 @@ public class BluetoothModule {
 			session.setInfos(infos);
 	}
 	
-	public synchronized void setSessionFinished() {
-		session.setFinished();
+	public boolean isConnectionAbortedIntentionally() {
+		return connectionAbortedIntentionally;
 	}
 	
-	public boolean isSessionFinished() {
-		if (session == null)
-			return false;
-		else
-			return session.isFinished();
+	public void setConnectionAbortedIntentionally(boolean intended) {
+		connectionAbortedIntentionally = intended;
 	}
 	
 	public Handler getHandler() {
@@ -145,7 +144,7 @@ public class BluetoothModule {
         	connectedThread = null;
         }
         
-        createSession(infos);
+        session.setInfos(infos);
 
         // Start the thread to connect with the given device
         BluetoothDevice remoteDevice = adapter.getRemoteDevice(session.getSessionInfos().getInitiatorDeviceAddress());
@@ -209,7 +208,7 @@ public class BluetoothModule {
             acceptThread = null;
         }
         
-        createSession(null);
+        createSession(null);//TODO jeton: rethink!!
 
         setState(BluetoothState.STATE_NONE);
 	}
@@ -259,7 +258,7 @@ public class BluetoothModule {
             while (state != BluetoothState.STATE_CONNECTED) {
                 try {
                     socket = serverSocket.accept();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Log.e(TAG, "accept() failed", e);
                     break;
                 }
@@ -401,7 +400,6 @@ public class BluetoothModule {
 					
 					handler.obtainMessage(Messages.P2P_PROTOCOL_MESSAGE, baos.toByteArray()).sendToTarget();
 				} catch (IOException e) {
-					Log.e(TAG, "disconnected", e);
 					handler.obtainMessage(Messages.BLUETOOTH_CONNECTION_LOST).sendToTarget();
 					break;
 				}

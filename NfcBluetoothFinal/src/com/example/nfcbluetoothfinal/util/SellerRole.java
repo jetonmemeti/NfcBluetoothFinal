@@ -33,7 +33,8 @@ public class SellerRole implements PaymentRole, Serializable {
 	public static String getRoleID() {
 		return ROLE_TEXT;
 	}
-	
+
+	//TODO jeton: delete log output
 	@Override
 	public synchronized void process(byte[] bytes, BluetoothModule bluetoothModule) {
 		String s;

@@ -7,7 +7,6 @@ import com.example.nfcbluetoothfinal.BluetoothModule;
 public class BluetoothSession {
 	private BluetoothSessionInfos infos;
 	private PaymentRole role;
-	private boolean finished = false;
 	
 	public BluetoothSession(boolean asSeller) {
 		infos = new BluetoothSessionInfos();
@@ -22,14 +21,6 @@ public class BluetoothSession {
 		this.infos = infos;
 	}
 	
-	public void setFinished() {
-		finished = true;
-	}
-	
-	public boolean isFinished() {
-		return finished;
-	}
-
 	public void process(byte[] bytes, BluetoothModule bluetoothModule) {
 		role.process(bytes, bluetoothModule);
 	}

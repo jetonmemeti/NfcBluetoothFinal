@@ -29,7 +29,6 @@ public class NfcBluetoothFinal extends Activity {
 	private BluetoothModule bluetoothModule = null;
 	private NfcModule nfcModule = null;
 	
-	//TODO jeton: catch connection lost exception when intended
 	//TODO jeton: register/unregister onPause needed? rethink!
 	
 	@Override
@@ -189,10 +188,13 @@ public class NfcBluetoothFinal extends Activity {
 				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_CONNECTION_LOST:
-				if (!bluetoothModule.isSessionFinished()) {
+				if (!bluetoothModule.isConnectionAbortedIntentionally()) {
 					Toast.makeText(getApplicationContext(), Messages.ERROR_BLUETOOTH_CONNECTION_LOST, Toast.LENGTH_LONG).show();
+					//reset flag
+					bluetoothModule.setConnectionAbortedIntentionally(false);
+				} else {
+					stopBluetoothModule();
 				}
-				stopBluetoothModule();
 				break;
 			case Messages.BLUETOOTH_STATE_CHANGED:
 				switch ((BluetoothState) msg.obj) {
@@ -224,10 +226,9 @@ public class NfcBluetoothFinal extends Activity {
 				}
 				break;
 			case Messages.P2P_PROTOCOL_FINISHED:
-				bluetoothModule.setSessionFinished();
+				bluetoothModule.setConnectionAbortedIntentionally(true);
 				unregisterBroadcastReceiver();
 				stopBluetoothModule();
-				disableBluetooth();
 				break;
 			}
 		}
