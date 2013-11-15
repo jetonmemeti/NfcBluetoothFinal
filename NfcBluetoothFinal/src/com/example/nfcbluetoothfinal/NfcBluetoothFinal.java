@@ -29,8 +29,6 @@ public class NfcBluetoothFinal extends Activity {
 	private BluetoothModule bluetoothModule = null;
 	private NfcModule nfcModule = null;
 	
-	//TODO jeton: register/unregister onPause needed? rethink!
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -128,7 +126,9 @@ public class NfcBluetoothFinal extends Activity {
 	public void onStop() {
 		super.onStop();
 		
-		//TODO jeton: call on destroy?
+		unregisterBroadcastReceiver();
+		stopBluetoothModule();
+		disableBluetooth();
 	}
 	
 	@Override
